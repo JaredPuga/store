@@ -13,6 +13,7 @@ import java.sql.Statement;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.table.DefaultTableModel;
 /**
  *
  * @author Compax
@@ -72,6 +73,35 @@ public class sistema extends javax.swing.JFrame {
         }
     }
     
+    public void MostrarTabla() {
+        DefaultTableModel modelo = new DefaultTableModel();
+        modelo.addColumn("Producto");
+        modelo.addColumn("Contenido");
+        modelo.addColumn("Precio");
+        modelo.addColumn("Categoria");
+        
+        tabla_productos.setModel(modelo);
+        
+        String sql = "select * from productos;";
+        
+        String prod[] = new String[5];
+        
+        try {
+        Statement st = con.createStatement();
+        ResultSet res = st.executeQuery(sql);
+            while (res.next()) {
+                prod[0] = res.getString(2);
+                prod[1] = res.getString(3);
+                prod[2] = res.getString(4);
+                prod[3] = res.getString(5);
+                modelo.addRow(prod);
+            }
+            tabla_productos.setModel(modelo);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error de Muestra "+e.getMessage());
+        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -103,6 +133,8 @@ public class sistema extends javax.swing.JFrame {
         bienvenido = new javax.swing.JLabel();
         foto = new rojerusan.RSFotoCircle();
         jPanel2 = new javax.swing.JPanel();
+        datos_inventario = new javax.swing.JScrollPane();
+        tabla_productos = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
@@ -321,6 +353,28 @@ public class sistema extends javax.swing.JFrame {
 
         jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(860, 0, 120, 560));
 
+        tabla_productos = new javax.swing.JTable() {
+            public boolean isCellEditable(int rowIndex, int colIndex) {
+                return false;
+            }
+        };
+        tabla_productos.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        tabla_productos.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+
+            }
+        ));
+        tabla_productos.setRowHeight(19);
+        tabla_productos.setShowHorizontalLines(false);
+        tabla_productos.getTableHeader().setResizingAllowed(false);
+        tabla_productos.getTableHeader().setReorderingAllowed(false);
+        datos_inventario.setViewportView(tabla_productos);
+
+        jPanel1.add(datos_inventario, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 710, 420));
+
         getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 980, 560));
 
         pack();
@@ -339,11 +393,12 @@ public class sistema extends javax.swing.JFrame {
     }//GEN-LAST:event_jLabel4MousePressed
 
     private void jLabel2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MousePressed
-        b1_vent.setVisible(true);
+        b1_vent.setVisible(true); 
         b2_agprod.setVisible(false);
         b3_agprom.setVisible(false);
         b4_inv.setVisible(false);
         b5_cerrarc1.setVisible(false);
+        MostrarTabla();
     }//GEN-LAST:event_jLabel2MousePressed
 
     private void b3_agpromMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_b3_agpromMousePressed
@@ -429,6 +484,7 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JPanel b5;
     private javax.swing.JPanel b5_cerrarc1;
     private javax.swing.JLabel bienvenido;
+    private javax.swing.JScrollPane datos_inventario;
     private rojerusan.RSFotoCircle foto;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -440,6 +496,7 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JLabel name;
+    private javax.swing.JTable tabla_productos;
     // End of variables declaration//GEN-END:variables
 
     private void setColor(JPanel b1) {
