@@ -173,6 +173,25 @@ public class sistema extends javax.swing.JFrame {
         
     }
     
+    public void AgregarProducto() {
+        double pr = Double.parseDouble(precio.getText());
+        int sto = Integer.parseInt(stock.getText());
+        String sql = "insert into productos (nombre_producto, contenido, precio, categoria, stock) VALUES ('"+nombre.getText()+"', '"+contenido.getText()+"', '"+pr+"', '"+categoria.getText()+"', '"+sto+"');";
+        try {
+        Statement st = con.createStatement();
+        st.executeUpdate(sql);
+        JOptionPane.showMessageDialog(null, "Producto Agregado Correctamente");
+        nombre.setText(null);
+        contenido.setText(null);
+        precio.setText(null);
+        categoria.setText(null);
+        stock.setText(null);
+        
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error agregando producto "+e.getMessage());
+        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -214,6 +233,27 @@ public class sistema extends javax.swing.JFrame {
         prod = new javax.swing.JComboBox<>();
         jLabel8 = new javax.swing.JLabel();
         cantidad = new javax.swing.JTextField();
+        Agregar_prod = new javax.swing.JPanel();
+        jLabel9 = new javax.swing.JLabel();
+        nombre = new javax.swing.JTextField();
+        jSeparator1 = new javax.swing.JSeparator();
+        jLabel10 = new javax.swing.JLabel();
+        jSeparator2 = new javax.swing.JSeparator();
+        contenido = new javax.swing.JTextField();
+        jSeparator3 = new javax.swing.JSeparator();
+        precio = new javax.swing.JTextField();
+        jLabel11 = new javax.swing.JLabel();
+        jSeparator4 = new javax.swing.JSeparator();
+        jSeparator5 = new javax.swing.JSeparator();
+        categoria = new javax.swing.JTextField();
+        mlolts = new javax.swing.JLabel();
+        stock = new javax.swing.JTextField();
+        jSeparator6 = new javax.swing.JSeparator();
+        jLabel13 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
+        jLabel14 = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
+        jLabel16 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
@@ -500,6 +540,122 @@ public class sistema extends javax.swing.JFrame {
 
         jPanel1.add(Reg_venta, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 710, 420));
 
+        Agregar_prod.setBackground(new java.awt.Color(68, 132, 206));
+        Agregar_prod.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        jLabel9.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        jLabel9.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel9.setText("Categoría");
+        Agregar_prod.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 230, 90, -1));
+
+        nombre.setBackground(new java.awt.Color(68, 132, 206));
+        nombre.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        nombre.setForeground(new java.awt.Color(255, 255, 255));
+        nombre.setBorder(null);
+        nombre.setOpaque(false);
+        Agregar_prod.add(nombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 110, 240, 20));
+        Agregar_prod.add(jSeparator1, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 130, 240, 20));
+
+        jLabel10.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        jLabel10.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel10.setText("Nombre del producto ");
+        Agregar_prod.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(68, 110, 170, -1));
+        Agregar_prod.add(jSeparator2, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 170, 110, 10));
+
+        contenido.setBackground(new java.awt.Color(68, 132, 206));
+        contenido.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        contenido.setForeground(new java.awt.Color(255, 255, 255));
+        contenido.setBorder(null);
+        contenido.setOpaque(false);
+        contenido.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                contenidoKeyTyped(evt);
+            }
+        });
+        Agregar_prod.add(contenido, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 150, 60, 20));
+        Agregar_prod.add(jSeparator3, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 210, 110, 20));
+
+        precio.setBackground(new java.awt.Color(68, 132, 206));
+        precio.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        precio.setForeground(new java.awt.Color(255, 255, 255));
+        precio.setBorder(null);
+        precio.setOpaque(false);
+        precio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                precioActionPerformed(evt);
+            }
+        });
+        precio.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                precioKeyTyped(evt);
+            }
+        });
+        Agregar_prod.add(precio, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 190, 100, 20));
+
+        jLabel11.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        jLabel11.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel11.setText("Contenido");
+        Agregar_prod.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 150, 90, -1));
+        Agregar_prod.add(jSeparator4, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 210, 110, 20));
+        Agregar_prod.add(jSeparator5, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 250, 110, 20));
+
+        categoria.setBackground(new java.awt.Color(68, 132, 206));
+        categoria.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        categoria.setForeground(new java.awt.Color(255, 255, 255));
+        categoria.setBorder(null);
+        categoria.setOpaque(false);
+        Agregar_prod.add(categoria, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 230, 110, 20));
+
+        if (contenido.getText().equals("1.02") || contenido.getText().equals("2.5")) {
+            mlolts.setText("lts");
+        } else {
+            mlolts.setText("ml");
+        }
+        mlolts.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        mlolts.setForeground(new java.awt.Color(255, 255, 255));
+        mlolts.setText("ml/lts");
+        Agregar_prod.add(mlolts, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 150, 60, 20));
+
+        stock.setBackground(new java.awt.Color(68, 132, 206));
+        stock.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        stock.setForeground(new java.awt.Color(255, 255, 255));
+        stock.setBorder(null);
+        stock.setOpaque(false);
+        Agregar_prod.add(stock, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 270, 110, 20));
+        Agregar_prod.add(jSeparator6, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 290, 110, 20));
+
+        jLabel13.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        jLabel13.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel13.setText("Stock");
+        Agregar_prod.add(jLabel13, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 270, 60, -1));
+
+        jButton1.setBackground(new java.awt.Color(241, 159, 77));
+        jButton1.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        jButton1.setForeground(new java.awt.Color(255, 255, 255));
+        jButton1.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        jButton1.setLabel("Agregar Producto");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        Agregar_prod.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 320, 200, 40));
+
+        jLabel14.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/beer.png"))); // NOI18N
+        Agregar_prod.add(jLabel14, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 300, 60, 70));
+
+        jLabel15.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        jLabel15.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel15.setText("Precio");
+        Agregar_prod.add(jLabel15, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 190, 60, -1));
+
+        jLabel16.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        jLabel16.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel16.setText("$");
+        Agregar_prod.add(jLabel16, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 190, 30, -1));
+
+        jPanel1.add(Agregar_prod, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 710, 420));
+
         getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 980, 560));
 
         pack();
@@ -510,11 +666,14 @@ public class sistema extends javax.swing.JFrame {
     }//GEN-LAST:event_jLabel4MouseClicked
 
     private void jLabel4MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel4MousePressed
-        b2_agprod.setVisible(true);
+        b2_agprod.setVisible(true); //AGREGAR PRODUCTOOOOOOOO
         b1_vent.setVisible(false);
         b3_agprom.setVisible(false);
         b4_inv.setVisible(false);
         b5_cerrarc1.setVisible(false);
+        datos_inventario.setVisible(false);
+        Reg_venta.setVisible(false);
+        Agregar_prod.setVisible(true);
     }//GEN-LAST:event_jLabel4MousePressed
 
     private void jLabel2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MousePressed
@@ -525,6 +684,7 @@ public class sistema extends javax.swing.JFrame {
         b5_cerrarc1.setVisible(false);
         Reg_venta.setVisible(true);
         datos_inventario.setVisible(false);
+        Agregar_prod.setVisible(false);
         prod.setModel(llenar());
         
     }//GEN-LAST:event_jLabel2MousePressed
@@ -554,6 +714,7 @@ public class sistema extends javax.swing.JFrame {
         datos_inventario.setVisible(true);
         MostrarTabla();
         Reg_venta.setVisible(false);
+        Agregar_prod.setVisible(true);
     }//GEN-LAST:event_jLabel1MousePressed
 
     private void b5_cerrarc1MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_b5_cerrarc1MousePressed
@@ -583,6 +744,35 @@ public class sistema extends javax.swing.JFrame {
     private void cantidadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cantidadActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_cantidadActionPerformed
+
+    private void precioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_precioActionPerformed
+        
+    }//GEN-LAST:event_precioActionPerformed
+
+    private void precioKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_precioKeyTyped
+        char validar = evt.getKeyChar();
+        
+        if (Character.isLetter(validar)) {
+            getToolkit().beep();
+            evt.consume();
+            
+            JOptionPane.showMessageDialog(null, "Solo numeros para el precio");
+        }
+    }//GEN-LAST:event_precioKeyTyped
+
+    private void contenidoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_contenidoKeyTyped
+        char validar = evt.getKeyChar();
+        
+        if (Character.isLetter(validar)) {
+            getToolkit().beep();
+            evt.consume();
+            JOptionPane.showMessageDialog(null, "Solo numeros para el precio");
+        }
+    }//GEN-LAST:event_contenidoKeyTyped
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        AgregarProducto();
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -620,6 +810,7 @@ public class sistema extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel Agregar_prod;
     private javax.swing.JPanel Reg_venta;
     private javax.swing.JPanel b1;
     private javax.swing.JPanel b1_vent;
@@ -635,9 +826,18 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JLabel bienvenido;
     private javax.swing.JButton btn_venta;
     private javax.swing.JTextField cantidad;
+    private javax.swing.JTextField categoria;
+    private javax.swing.JTextField contenido;
     private javax.swing.JScrollPane datos_inventario;
     private rojerusan.RSFotoCircle foto;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -645,12 +845,23 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JSeparator jSeparator3;
+    private javax.swing.JSeparator jSeparator4;
+    private javax.swing.JSeparator jSeparator5;
+    private javax.swing.JSeparator jSeparator6;
+    private javax.swing.JLabel mlolts;
     private javax.swing.JLabel name;
+    private javax.swing.JTextField nombre;
+    private javax.swing.JTextField precio;
     private javax.swing.JComboBox<String> prod;
+    private javax.swing.JTextField stock;
     private javax.swing.JTable tabla_productos;
     // End of variables declaration//GEN-END:variables
 
