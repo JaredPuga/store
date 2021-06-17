@@ -10,7 +10,11 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.table.DefaultTableModel;
@@ -79,10 +83,11 @@ public class sistema extends javax.swing.JFrame {
         modelo.addColumn("Contenido");
         modelo.addColumn("Precio");
         modelo.addColumn("Categoria");
+        modelo.addColumn("Stock");
         
         tabla_productos.setModel(modelo);
         
-        String sql = "select * from productos;";
+        String sql = "select * from productos order by categoria;";
         
         String prod[] = new String[5];
         
@@ -91,15 +96,81 @@ public class sistema extends javax.swing.JFrame {
         ResultSet res = st.executeQuery(sql);
             while (res.next()) {
                 prod[0] = res.getString(2);
-                prod[1] = res.getString(3);
-                prod[2] = res.getString(4);
+                if (Double.parseDouble(res.getString(3))>3.0) {
+                    prod[1] = res.getString(3)+" ml";
+                } else {
+                    prod[1] = res.getString(3)+" lts";
+                }
+                prod[2] = "$ "+res.getString(4)+" pesos";
                 prod[3] = res.getString(5);
+                prod[4] = res.getString(6);
                 modelo.addRow(prod);
             }
             tabla_productos.setModel(modelo);
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error de Muestra "+e.getMessage());
         }
+    }
+    
+    public DefaultComboBoxModel llenar() {
+        DefaultComboBoxModel modelo = new DefaultComboBoxModel();
+        String s ="select nombre_producto, categoria from productos order by nombre_producto;";
+        modelo.addElement("Seleccionar");
+        
+        try {
+          
+          Statement st = con.createStatement();
+          ResultSet res = st.executeQuery(s);
+          while(res.next()) {
+              modelo.addElement(res.getString(1)+", "+res.getString(2));
+          }
+          
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al llenar JCombox "+e.getMessage());
+        }
+        
+        return modelo;
+    }
+    
+    public void vender() throws SQLException {
+        String nom;
+        int id=0,a=0;
+        nom = (String) prod.getSelectedItem();  
+        String[] cat = nom.split(", ");
+        nom = cat[0];
+        String ca = cat[1];
+        String sql = "Select stock from productos where nombre_producto='"+nom+"' and categoria='"+ca+"'";
+        try {
+        Statement st = con.createStatement();
+        ResultSet res = st.executeQuery(sql);
+            while (res.next()) {
+                a = res.getInt(1)-Integer.parseInt(cantidad.getText());
+            }
+            
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error de Venta "+e.getMessage());
+        }
+        
+        String sql2 = "Select idproductos from productos where nombre_producto='"+nom+"' and categoria='"+ca+"'";
+        try {
+        Statement st = con.createStatement();
+        ResultSet res = st.executeQuery(sql2);
+            while (res.next()) {
+                id = res.getInt(1);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error de Consulta ID "+e.getMessage());
+        }
+        
+        String sql3 = "update productos set stock="+a+" where idproductos="+id+"";
+        try {
+        Statement st = con.createStatement();
+        st.executeUpdate(sql3);
+        JOptionPane.showConfirmDialog(null, "Confirmar Venta");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error de UPDATE "+e.getMessage());
+        }
+        
     }
     
     /**
@@ -135,6 +206,14 @@ public class sistema extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         datos_inventario = new javax.swing.JScrollPane();
         tabla_productos = new javax.swing.JTable();
+        Reg_venta = new javax.swing.JPanel();
+        jLabel6 = new javax.swing.JLabel();
+        barras = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        btn_venta = new javax.swing.JButton();
+        prod = new javax.swing.JComboBox<>();
+        jLabel8 = new javax.swing.JLabel();
+        cantidad = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
@@ -375,6 +454,52 @@ public class sistema extends javax.swing.JFrame {
 
         jPanel1.add(datos_inventario, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 710, 420));
 
+        Reg_venta.setBackground(new java.awt.Color(24, 18, 30));
+        Reg_venta.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        jLabel6.setFont(new java.awt.Font("Berlin Sans FB", 0, 14)); // NOI18N
+        jLabel6.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel6.setText("Cantidad:");
+        Reg_venta.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 140, -1, -1));
+
+        barras.setFont(new java.awt.Font("Berlin Sans FB", 0, 10)); // NOI18N
+        barras.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                barrasActionPerformed(evt);
+            }
+        });
+        Reg_venta.add(barras, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 60, 190, 20));
+
+        jLabel7.setFont(new java.awt.Font("Berlin Sans FB", 0, 14)); // NOI18N
+        jLabel7.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel7.setText("Codigo de Barras");
+        Reg_venta.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 60, -1, -1));
+
+        btn_venta.setLabel("Vender");
+        btn_venta.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_ventaActionPerformed(evt);
+            }
+        });
+        Reg_venta.add(btn_venta, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 310, 130, 30));
+
+        Reg_venta.add(prod, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 110, 190, -1));
+
+        jLabel8.setFont(new java.awt.Font("Berlin Sans FB", 0, 14)); // NOI18N
+        jLabel8.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel8.setText("Nombre:");
+        Reg_venta.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 110, -1, -1));
+
+        cantidad.setFont(new java.awt.Font("Berlin Sans FB", 0, 10)); // NOI18N
+        cantidad.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cantidadActionPerformed(evt);
+            }
+        });
+        Reg_venta.add(cantidad, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 140, 190, 20));
+
+        jPanel1.add(Reg_venta, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 710, 420));
+
         getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 980, 560));
 
         pack();
@@ -393,12 +518,15 @@ public class sistema extends javax.swing.JFrame {
     }//GEN-LAST:event_jLabel4MousePressed
 
     private void jLabel2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MousePressed
-        b1_vent.setVisible(true); 
+        b1_vent.setVisible(true); //VENTAAAAAAAASSSS
         b2_agprod.setVisible(false);
         b3_agprom.setVisible(false);
         b4_inv.setVisible(false);
         b5_cerrarc1.setVisible(false);
-        MostrarTabla();
+        Reg_venta.setVisible(true);
+        datos_inventario.setVisible(false);
+        prod.setModel(llenar());
+        
     }//GEN-LAST:event_jLabel2MousePressed
 
     private void b3_agpromMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_b3_agpromMousePressed
@@ -418,11 +546,14 @@ public class sistema extends javax.swing.JFrame {
     }//GEN-LAST:event_jLabel5MousePressed
 
     private void jLabel1MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel1MousePressed
-        b4_inv.setVisible(true);
+        b4_inv.setVisible(true); //INVENTARIOOOOOOOO
         b2_agprod.setVisible(false);
         b3_agprom.setVisible(false);
         b1_vent.setVisible(false);
         b5_cerrarc1.setVisible(false);
+        datos_inventario.setVisible(true);
+        MostrarTabla();
+        Reg_venta.setVisible(false);
     }//GEN-LAST:event_jLabel1MousePressed
 
     private void b5_cerrarc1MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_b5_cerrarc1MousePressed
@@ -436,6 +567,22 @@ public class sistema extends javax.swing.JFrame {
         b1_vent.setVisible(false);
         b4_inv.setVisible(false);
     }//GEN-LAST:event_jLabel3MousePressed
+
+    private void barrasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_barrasActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_barrasActionPerformed
+
+    private void btn_ventaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_ventaActionPerformed
+        try {
+            vender();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error de UPDATE en funcion Vender del BTN "+e.getMessage());
+        }
+    }//GEN-LAST:event_btn_ventaActionPerformed
+
+    private void cantidadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cantidadActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cantidadActionPerformed
 
     /**
      * @param args the command line arguments
@@ -473,6 +620,7 @@ public class sistema extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel Reg_venta;
     private javax.swing.JPanel b1;
     private javax.swing.JPanel b1_vent;
     private javax.swing.JPanel b2;
@@ -483,7 +631,10 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JPanel b4_inv;
     private javax.swing.JPanel b5;
     private javax.swing.JPanel b5_cerrarc1;
+    private javax.swing.JTextField barras;
     private javax.swing.JLabel bienvenido;
+    private javax.swing.JButton btn_venta;
+    private javax.swing.JTextField cantidad;
     private javax.swing.JScrollPane datos_inventario;
     private rojerusan.RSFotoCircle foto;
     private javax.swing.JLabel jLabel1;
@@ -491,11 +642,15 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JLabel name;
+    private javax.swing.JComboBox<String> prod;
     private javax.swing.JTable tabla_productos;
     // End of variables declaration//GEN-END:variables
 
@@ -504,6 +659,10 @@ public class sistema extends javax.swing.JFrame {
     }
 
     private void resetColor(JPanel[] jPanel, JPanel[] jPanel0) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private JComboBox<String> setModel(DefaultComboBoxModel llenar) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
