@@ -276,9 +276,36 @@ public class sistema extends javax.swing.JFrame {
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error, el producto no existe ");
+        }  
+    }
+    
+    public void ActualizarVentas() {
+        if (prod.getSelectedIndex()!=0) {
+           String n = (String)prod.getSelectedItem();
+           String[] div = n.split(", ");
+           String np = div[0];
+           String cp = div[1];
+           String prp ="";
+           for (int i=0;i<pre.getText().length();i++) {
+               if(Character.isDigit(pre.getText().charAt(i))) {
+                   prp+=pre.getText().charAt(i);
+               }
+           }
+
+           String sql = "insert into ventas (producto, categoria, cantidad, total) VALUES ('"+np+"', '"+cp+"', "+cantidad.getText()+", "+prp+");";
+           try {
+               Statement st = con.createStatement();
+               st.executeUpdate(sql);
+               barras.setText(null);
+               pre.setText(null);
+               cantidad.setText(null);
+               prod.setSelectedIndex(0);
+               JOptionPane.showMessageDialog(null, "Venta agregada Correctamente");
+           } catch (SQLException e) {
+               JOptionPane.showMessageDialog(null, "Error agregando venta "+e.getMessage());
+           }
+           
         }
-        
-        
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -926,11 +953,10 @@ public class sistema extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "Campos vacios, por favor llena todos los campos");
             } else {
                 vender();
+                ActualizarVentas();
+                MostrarTablaVentas();
                 JOptionPane.showMessageDialog(null, "Venta Exitosa");
-                barras.setText(null);
-                pre.setText(null);
-                cantidad.setText(null);
-                prod.setSelectedIndex(0);
+                
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error de UPDATE en funcion Vender del BTN "+e.getMessage());
@@ -1001,25 +1027,29 @@ public class sistema extends javax.swing.JFrame {
 
     private void prodActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_prodActionPerformed
        String nom = (String) prod.getSelectedItem();
-       String[] div = nom.split(", ");
-       String np = div[0];
-       String cp = div[1];
-       barras.setText(null);
-       pre.setText(null);
-       String sql = "SELECT codigobarras, precio FROM productos WHERE nombre_producto='"+np+"' and categoria='"+cp+"';";
-        try {
-            Statement st = con.createStatement();
-            ResultSet res = st.executeQuery(sql);
+       if (prod.getSelectedIndex()!=0) {
+           String[] div = nom.split(", ");
+           String np = div[0];
+           String cp = div[1];
+           barras.setText(null);
+           pre.setText(null);
+           String sql = "SELECT codigobarras, precio FROM productos WHERE nombre_producto='"+np+"' and categoria='"+cp+"';";
+           try {
+               Statement st = con.createStatement();
+               ResultSet res = st.executeQuery(sql);
    
-            while (res.next()) {
-                String n = res.getString(1);
-                String c = res.getString(2);
-                barras.setText(n);
-                pre.setText("$ "+c);
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error, el producto no existe ");
+               while (res.next()) {
+                   String n = res.getString(1);
+                   String c = res.getString(2);
+                   barras.setText(n);
+                   pre.setText("$ "+c);
+               }
+           } catch (SQLException e) {
+           JOptionPane.showMessageDialog(null, "Error, el producto no existe ");
         }
+       }
+       
+       
     }//GEN-LAST:event_prodActionPerformed
 
     /**
