@@ -36,6 +36,7 @@ public class sistema extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
         setNombre();
         this.setIconImage(new ImageIcon(getClass().getResource("/img/icon.png")).getImage());
+        
         b1_vent.setVisible(false);
         b2_agprod.setVisible(false);
         b3_agprom.setVisible(false);
@@ -142,6 +143,29 @@ public class sistema extends javax.swing.JFrame {
         return modelo;
     }
     
+    public void actualizarSuma() {
+        double tventas=0;
+        String sql8 = "Select sum(total) from ventas;";
+        try {
+          Statement st = con.createStatement();
+          ResultSet res = st.executeQuery(sql8);
+          while(res.next()) {
+              if(res.getString(1)==null) {
+                  caja.setText("0");
+              } else {
+                tventas = Double.parseDouble(res.getString(1));
+              }
+          }          
+        } catch (NumberFormatException | SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error obtener suma total ventas"+e.getMessage());
+        }
+        
+        String vv = Double.toString(tventas);
+        caja.setText(vv);
+        
+    }
+    
+    
     public void vender() throws SQLException {
         String nom;
         int id=0,a=0;
@@ -149,7 +173,7 @@ public class sistema extends javax.swing.JFrame {
         String[] cat = nom.split(", ");
         nom = cat[0];
         String ca = cat[1];
-        String sql = "Select stock from productos where nombre_producto='"+nom+"' and categoria='"+ca+"'";
+        String sql = "Select stock from productos where nombre_producto='"+nom+"' and categoria='"+ca+"';"; //Se actualiza el stock
         try {
         Statement st = con.createStatement();
         ResultSet res = st.executeQuery(sql);
@@ -161,7 +185,7 @@ public class sistema extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Error de Venta "+e.getMessage());
         }
         
-        String sql2 = "Select idproductos from productos where nombre_producto='"+nom+"' and categoria='"+ca+"'";
+        String sql2 = "Select idproductos from productos where nombre_producto='"+nom+"' and categoria='"+ca+"';"; //Para obtener el id
         try {
         Statement st = con.createStatement();
         ResultSet res = st.executeQuery(sql2);
@@ -172,7 +196,7 @@ public class sistema extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Error de Consulta ID "+e.getMessage());
         }
         
-        String sql3 = "update productos set stock="+a+" where idproductos="+id+"";
+        String sql3 = "update productos set stock="+a+" where idproductos="+id+";"; //Se actualiza el stock
         try {
         Statement st = con.createStatement();
         st.executeUpdate(sql3);
@@ -180,7 +204,51 @@ public class sistema extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Error de UPDATE "+e.getMessage());
         }
         
+        int maxv=0;
+        double pre = 0,tot = 0;
+        String sql5 = "Select precio from productos where idproductos="+id+";"; //Se retorna el precio del producto
+        try {
+          Statement st = con.createStatement();
+          ResultSet res = st.executeQuery(sql5);
+          while(res.next()) {
+              pre =Double.parseDouble(res.getString(1));
+          }
+          
+          tot = pre*(Double.parseDouble(cantidad.getText()));
+          
+        } catch (NumberFormatException | SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error hacer operacion total"+e.getMessage());
+        }
+        
+        ActualizarVentas();
+        
+        String sql6 = "Select max(idventa) from ventas;";
+        try {
+          Statement st = con.createStatement();
+          ResultSet res = st.executeQuery(sql6);
+          while(res.next()) {
+              maxv = Integer.parseInt(res.getString(1));
+          }          
+        } catch (NumberFormatException | SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error obtener maxidventas id"+e.getMessage());
+        }
+        
+        String sql7 = "update ventas set total="+tot+" where idventa="+maxv+";";
+        try {
+        Statement st = con.createStatement();
+        st.executeUpdate(sql7);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error de UPDATE para total"+e.getMessage());
+        }
+        
+        double s = Double.parseDouble(caja.getText());
+        String aa = Double.toString(s+(Double.parseDouble(caja.getText())));
+        caja.setText(aa);
+        
+        actualizarSuma();
     }
+    
+    
     
     public void AgregarProducto() {
         double pr = Double.parseDouble(precio.getText());
@@ -199,6 +267,8 @@ public class sistema extends javax.swing.JFrame {
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error agregando producto "+e.getMessage());
         }
+        
+        
     }
     
     
@@ -358,6 +428,8 @@ public class sistema extends javax.swing.JFrame {
         jLabel19 = new javax.swing.JLabel();
         jSeparator7 = new javax.swing.JSeparator();
         jSeparator8 = new javax.swing.JSeparator();
+        caja = new javax.swing.JLabel();
+        jLabel18 = new javax.swing.JLabel();
         Agregar_prod = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
         nombre = new javax.swing.JTextField();
@@ -744,6 +816,16 @@ public class sistema extends javax.swing.JFrame {
         Reg_venta.add(jSeparator7, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 60, 130, 10));
         Reg_venta.add(jSeparator8, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 150, 50, 10));
 
+        caja.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        caja.setForeground(new java.awt.Color(255, 255, 255));
+        caja.setText("0");
+        Reg_venta.add(caja, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 350, 100, 30));
+
+        jLabel18.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        jLabel18.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel18.setText("Caja:");
+        Reg_venta.add(jLabel18, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 350, 50, 30));
+
         jPanel1.add(Reg_venta, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 710, 420));
 
         Agregar_prod.setBackground(new java.awt.Color(68, 132, 206));
@@ -898,6 +980,7 @@ public class sistema extends javax.swing.JFrame {
         Reg_venta.setVisible(true);
         prod.setModel(llenar());
         MostrarTablaVentas();
+        actualizarSuma();
         labelfecha.setText(getFecha());
     }//GEN-LAST:event_jLabel2MousePressed
 
@@ -1103,6 +1186,7 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JTextField barras;
     private javax.swing.JLabel bienvenido;
     private javax.swing.JButton btn_venta;
+    private javax.swing.JLabel caja;
     private javax.swing.JTextField cantidad;
     private javax.swing.JTextField categoria;
     private javax.swing.JTextField contenido;
@@ -1119,6 +1203,7 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
