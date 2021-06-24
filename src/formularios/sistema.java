@@ -28,6 +28,17 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.table.DefaultTableModel;
 import java.util.Date;
+
+//PDF
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import java.awt.HeadlessException;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+
+
 /**
  *
  * @author Compax
@@ -213,7 +224,11 @@ public class sistema extends javax.swing.JFrame {
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error de UPDATE "+e.getMessage());
         }
+        
+        //Para hacer la operacion del calculo de precio final
+        
         ActualizarVentas();
+        
         //Operacion para cajas
         
         String sql4 = "SELECT total FROM ventas where idventa=(Select max(idventa) from ventas);";
@@ -294,6 +309,13 @@ public class sistema extends javax.swing.JFrame {
         return fech.format(fecha);
     }
     
+    public String getFecha2() {
+        Date fecha = new Date();
+        SimpleDateFormat fech = new SimpleDateFormat("dd-MM-YYYY");
+        return fech.format(fecha);
+        
+    }
+    
     public void Buscar() {
         String cod = barras.getText();
         int ee=0;
@@ -346,8 +368,8 @@ public class sistema extends javax.swing.JFrame {
                    prp+=pre.getText().charAt(i);
                }
            }*/
-
-           String sql = "insert into ventas (producto, categoria, cantidad, total) VALUES ('"+np+"', '"+cp+"', "+cantidad.getText()+", "+pre.getText()+");";
+           double tot = Double.parseDouble(pre.getText())*Double.parseDouble(cantidad.getText());
+           String sql = "insert into ventas (producto, categoria, cantidad, total) VALUES ('"+np+"', '"+cp+"', "+cantidad.getText()+", "+tot+");";
            try {
                Statement st = con.createStatement();
                st.executeUpdate(sql);
@@ -371,14 +393,7 @@ public class sistema extends javax.swing.JFrame {
         double c,p=0,e,t;
         
         c = Double.parseDouble(cantidad.getText());
-        String prec = pre.getText();
-        String pree="";
-        /*char cadena[] = prec.toCharArray();
-        for (int i = 0; i < cadena.length; i++) {
-            if (Character.isDigit(cadena[i])) {
-                pree+=cadena[i];
-            }
-        }*/
+    
         p = Double.parseDouble(pre.getText());
         e = Double.parseDouble(efectivo.getText());
         
@@ -451,6 +466,47 @@ public class sistema extends javax.swing.JFrame {
             } catch (PrinterException printerException ) {
                 JOptionPane.showMessageDialog(null, "Error de impresion: "+printerException.getMessage());
             }
+        }
+    }
+    
+    public void Imprimir2(String name) {
+        Document documento = new Document();
+        
+        try {
+            String ruta = System.getProperty("user.home"); //para la ruta principal
+            PdfWriter.getInstance(documento, new FileOutputStream(ruta + "/Desktop/"+name)); //Cambiar nombre del reporte
+            documento.open();
+            
+            PdfPTable tabla = new PdfPTable(5);
+            tabla.addCell("Venta No");
+            tabla.addCell("Producto");
+            tabla.addCell("Categoria");
+            tabla.addCell("Cantidad");
+            tabla.addCell("Total");
+            
+            String sql="SELECT idventa, producto, categoria, cantidad, total FROM ventas Order by idventa;";
+            try {
+                Statement st = con.createStatement();
+                ResultSet res = st.executeQuery(sql);
+                
+                if (res.next()) {
+                    do {
+                        tabla.addCell(res.getString(1));
+                        tabla.addCell(res.getString(2));
+                        tabla.addCell(res.getString(3));
+                        tabla.addCell(res.getString(4));
+                        tabla.addCell(res.getString(5));
+                    } while (res.next());
+                    documento.add(tabla);
+                }
+       
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(null, "Error Generando PDF"+e.getMessage());
+            }
+            documento.close();
+            JOptionPane.showMessageDialog(null, "Reporte generado Exitosamente");
+        } catch (DocumentException | HeadlessException | FileNotFoundException ee) {
+            JOptionPane.showMessageDialog(null, "Error generando PDF 2e"+ee.getMessage());
         }
     }
     
@@ -659,9 +715,6 @@ public class sistema extends javax.swing.JFrame {
         jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel4.setText("Agregar Prod");
         jLabel4.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jLabel4MouseClicked(evt);
-            }
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 jLabel4MousePressed(evt);
             }
@@ -1148,10 +1201,6 @@ public class sistema extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jLabel4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel4MouseClicked
-        
-    }//GEN-LAST:event_jLabel4MouseClicked
-
     private void jLabel4MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel4MousePressed
         b2_agprod.setVisible(true); //AGREGAR PRODUCTOOOOOOOO
         b1_vent.setVisible(false);
@@ -1354,8 +1403,11 @@ public class sistema extends javax.swing.JFrame {
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // TODO add your handling code here:
-        ImprimirCaja(cerrar_caja);
-        Reset();
+        //ImprimirCaja(cerrar_caja);
+        String name = "Reporte_"+getFecha2()+".pdf";
+        System.out.println(name);
+        Imprimir2(name);
+        //Reset();
     }//GEN-LAST:event_jButton3ActionPerformed
 
     /**
