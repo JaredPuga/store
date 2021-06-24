@@ -35,8 +35,21 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import java.awt.HeadlessException;
+
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.PdfPCell;
+        
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+
 
 
 /**
@@ -475,14 +488,54 @@ public class sistema extends javax.swing.JFrame {
         try {
             String ruta = System.getProperty("user.home"); //para la ruta principal
             PdfWriter.getInstance(documento, new FileOutputStream(ruta + "/Desktop/"+name)); //Cambiar nombre del reporte
+            
+            Image header = Image.getInstance("src/img/modelorama.jpg");
+            header.scaleToFit(200, 1000);
+            header.setAlignment(Chunk.ALIGN_CENTER);
+            
+            Paragraph parrafo = new Paragraph();
+            parrafo.setAlignment(Paragraph.ALIGN_CENTER);
+            parrafo.setFont(FontFactory.getFont(FontFactory.HELVETICA, 22, Font.NORMAL));
+            parrafo.add("Reporte del día "+getFecha()+"\n\n");
             documento.open();
+            documento.add(header);
+            documento.add(parrafo);
             
             PdfPTable tabla = new PdfPTable(5);
-            tabla.addCell("Venta No");
-            tabla.addCell("Producto");
-            tabla.addCell("Categoria");
-            tabla.addCell("Cantidad");
-            tabla.addCell("Total");
+            tabla.setWidthPercentage(100);
+            Font f = FontFactory.getFont(FontFactory.HELVETICA);
+            f.setColor(BaseColor.WHITE);
+           
+            PdfPCell venta = new PdfPCell(new Phrase("Venta no",f));
+            venta.setBackgroundColor(BaseColor.MAGENTA);
+            venta.setHorizontalAlignment(Element.ALIGN_CENTER);
+            venta.setBorderWidth(0);
+            
+            PdfPCell producto = new PdfPCell(new Phrase("Producto",f));
+            producto.setBackgroundColor(BaseColor.MAGENTA);
+            producto.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
+            producto.setBorderWidth(0);
+            
+            PdfPCell categoriaa = new PdfPCell(new Phrase("Categoria",f));
+            categoriaa.setBackgroundColor(BaseColor.MAGENTA);
+            categoriaa.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
+            categoriaa.setBorderWidth(0);
+            
+            PdfPCell cantidadd = new PdfPCell(new Phrase("Cantidad",f));
+            cantidadd.setBackgroundColor(BaseColor.MAGENTA);
+            cantidadd.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
+            cantidadd.setBorderWidth(0);
+            
+            PdfPCell total = new PdfPCell(new Phrase("Total",f));
+            total.setBackgroundColor(BaseColor.MAGENTA);
+            total.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
+            total.setBorderWidth(0);
+            
+            tabla.addCell(venta);
+            tabla.addCell(producto);
+            tabla.addCell(categoriaa);
+            tabla.addCell(cantidadd);
+            tabla.addCell(total);
             
             String sql="SELECT idventa, producto, categoria, cantidad, total FROM ventas Order by idventa;";
             try {
@@ -491,11 +544,55 @@ public class sistema extends javax.swing.JFrame {
                 
                 if (res.next()) {
                     do {
-                        tabla.addCell(res.getString(1));
-                        tabla.addCell(res.getString(2));
-                        tabla.addCell(res.getString(3));
-                        tabla.addCell(res.getString(4));
-                        tabla.addCell(res.getString(5));
+                        PdfPCell idd = new PdfPCell(new Phrase(res.getString(1),f));
+                        if (Integer.parseInt(res.getString(1))%2==0) {
+                            idd.setBackgroundColor(BaseColor.DARK_GRAY);
+                        } else {
+                            idd.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                        }
+                        idd.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        idd.setBorderWidth(0);
+                        tabla.addCell(idd);
+                        
+                        PdfPCell proo = new PdfPCell(new Phrase(res.getString(2),f));
+                        if (Integer.parseInt(res.getString(1))%2==0) {
+                            proo.setBackgroundColor(BaseColor.DARK_GRAY);
+                        } else {
+                            proo.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                        }
+                        proo.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
+                        proo.setBorderWidth(0);
+                        tabla.addCell(proo);
+                        
+                        PdfPCell cat = new PdfPCell(new Phrase(res.getString(3),f));
+                        if (Integer.parseInt(res.getString(1))%2==0) {
+                            cat.setBackgroundColor(BaseColor.DARK_GRAY);
+                        } else {
+                            cat.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                        }
+                        cat.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
+                        cat.setBorderWidth(0);
+                        tabla.addCell(cat);
+                        
+                        PdfPCell cant = new PdfPCell(new Phrase(res.getString(4),f));
+                        if (Integer.parseInt(res.getString(1))%2==0) {
+                            cant.setBackgroundColor(BaseColor.DARK_GRAY);
+                        } else {
+                            cant.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                        }
+                        cant.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
+                        cant.setBorderWidth(0);
+                        tabla.addCell(cant);
+                        
+                        PdfPCell prr = new PdfPCell(new Phrase("$ "+res.getString(5),f));
+                        if (Integer.parseInt(res.getString(1))%2==0) {
+                            prr.setBackgroundColor(BaseColor.DARK_GRAY);
+                        } else {
+                            prr.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                        }
+                        prr.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
+                        prr.setBorderWidth(0);
+                        tabla.addCell(prr);
                     } while (res.next());
                     documento.add(tabla);
                 }
@@ -503,10 +600,13 @@ public class sistema extends javax.swing.JFrame {
             } catch (SQLException e) {
                 JOptionPane.showMessageDialog(null, "Error Generando PDF"+e.getMessage());
             }
+            
             documento.close();
             JOptionPane.showMessageDialog(null, "Reporte generado Exitosamente");
         } catch (DocumentException | HeadlessException | FileNotFoundException ee) {
             JOptionPane.showMessageDialog(null, "Error generando PDF 2e"+ee.getMessage());
+        } catch (IOException img) {
+            JOptionPane.showMessageDialog(null, "Error al cargar imagen "+img.getMessage());
         }
     }
     
@@ -1169,9 +1269,9 @@ public class sistema extends javax.swing.JFrame {
         tabla_caja.getTableHeader().setReorderingAllowed(false);
         jScrollPane3.setViewportView(tabla_caja);
 
-        cerrar_caja.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 90, 710, 190));
+        cerrar_caja.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 90, 710, 280));
 
-        jPanel9.setBackground(new java.awt.Color(14, 11, 22));
+        jPanel9.setBackground(new java.awt.Color(109, 121, 147));
         jPanel9.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         fecha.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
@@ -1192,7 +1292,7 @@ public class sistema extends javax.swing.JFrame {
                 jButton3ActionPerformed(evt);
             }
         });
-        cerrar_caja.add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(560, 340, 150, 40));
+        cerrar_caja.add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(560, 380, 150, 40));
 
         jPanel1.add(cerrar_caja, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 710, 420));
 
