@@ -8,6 +8,7 @@ package formularios;
 import com.sun.deploy.uitoolkit.impl.fx.ui.FXUIFactory;
 import com.sun.glass.events.KeyEvent;
 import conexion.conexionSQL;
+import java.awt.Color;
 import java.awt.HeadlessException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -81,15 +82,16 @@ public class usuarios extends javax.swing.JFrame {
         jSeparator2 = new javax.swing.JSeparator();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        ingresar = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
+        btn_ingresar = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(115, 50, 63));
         setUndecorated(true);
         setResizable(false);
 
-        jPanel1.setBackground(new java.awt.Color(35, 50, 55));
+        jPanel1.setBackground(new java.awt.Color(10, 34, 64));
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/icons8_user_60px.png"))); // NOI18N
 
@@ -97,7 +99,7 @@ public class usuarios extends javax.swing.JFrame {
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setText("Usuario");
 
-        user.setBackground(new java.awt.Color(35, 50, 55));
+        user.setBackground(new java.awt.Color(10, 34, 64));
         user.setFont(new java.awt.Font("Consolas", 0, 11)); // NOI18N
         user.setForeground(new java.awt.Color(255, 255, 255));
         user.setToolTipText("");
@@ -108,7 +110,7 @@ public class usuarios extends javax.swing.JFrame {
             }
         });
 
-        pass.setBackground(new java.awt.Color(35, 50, 55));
+        pass.setBackground(new java.awt.Color(10, 34, 64));
         pass.setFont(new java.awt.Font("Consolas", 0, 11)); // NOI18N
         pass.setForeground(new java.awt.Color(255, 255, 255));
         pass.setBorder(null);
@@ -129,23 +131,6 @@ public class usuarios extends javax.swing.JFrame {
 
         jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/icons8_password_48px.png"))); // NOI18N
 
-        ingresar.setBackground(new java.awt.Color(152, 75, 67));
-        ingresar.setFont(new java.awt.Font("Berlin Sans FB", 0, 15)); // NOI18N
-        ingresar.setForeground(new java.awt.Color(255, 255, 255));
-        ingresar.setText("Ingresar");
-        ingresar.setBorder(null);
-        ingresar.setBorderPainted(false);
-        ingresar.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        ingresar.setDefaultCapable(false);
-        ingresar.setFocusPainted(false);
-        ingresar.setFocusable(false);
-        ingresar.setName(""); // NOI18N
-        ingresar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ingresarActionPerformed(evt);
-            }
-        });
-
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/close.png"))); // NOI18N
         jButton1.setContentAreaFilled(false);
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -154,10 +139,53 @@ public class usuarios extends javax.swing.JFrame {
             }
         });
 
+        btn_ingresar.setBackground(new java.awt.Color(248, 184, 48));
+        btn_ingresar.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent evt) {
+                btn_ingresarMouseMoved(evt);
+            }
+        });
+        btn_ingresar.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btn_ingresarMouseExited(evt);
+            }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                btn_ingresarMousePressed(evt);
+            }
+        });
+        btn_ingresar.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                btn_ingresarKeyPressed(evt);
+            }
+        });
+
+        jLabel5.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        jLabel5.setForeground(new java.awt.Color(10, 34, 64));
+        jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel5.setText("Ingresar");
+
+        javax.swing.GroupLayout btn_ingresarLayout = new javax.swing.GroupLayout(btn_ingresar);
+        btn_ingresar.setLayout(btn_ingresarLayout);
+        btn_ingresarLayout.setHorizontalGroup(
+            btn_ingresarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, btn_ingresarLayout.createSequentialGroup()
+                .addContainerGap(48, Short.MAX_VALUE)
+                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(48, 48, 48))
+        );
+        btn_ingresarLayout.setVerticalGroup(
+            btn_ingresarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 28, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(71, 71, 71)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -167,25 +195,21 @@ public class usuarios extends javax.swing.JFrame {
                         .addComponent(jLabel4)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btn_ingresar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel3)
                     .addComponent(jLabel2)
                     .addComponent(user)
                     .addComponent(jSeparator1)
                     .addComponent(pass)
-                    .addComponent(jSeparator2)
-                    .addComponent(ingresar, javax.swing.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE))
+                    .addComponent(jSeparator2))
                 .addContainerGap(107, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 105, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 100, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
@@ -206,12 +230,10 @@ public class usuarios extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(18, 18, 18)
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(18, 18, 18)
-                .addComponent(ingresar, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(26, 26, 26)
+                .addComponent(btn_ingresar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(117, 117, 117))
         );
-
-        ingresar.getAccessibleContext().setAccessibleDescription("");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -231,25 +253,37 @@ public class usuarios extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_userActionPerformed
 
-    private void ingresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ingresarActionPerformed
-        Validar();
-    }//GEN-LAST:event_ingresarActionPerformed
-
     private void passActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_passActionPerformed
-
+        
     }//GEN-LAST:event_passActionPerformed
 
     private void passKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_passKeyPressed
         char tecla = evt.getKeyChar();
         
         if (tecla==KeyEvent.VK_ENTER) {
-            ingresar.doClick();
+            Validar();
         }
     }//GEN-LAST:event_passKeyPressed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void btn_ingresarKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_btn_ingresarKeyPressed
+       
+    }//GEN-LAST:event_btn_ingresarKeyPressed
+
+    private void btn_ingresarMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_ingresarMouseMoved
+        btn_ingresar.setBackground(new Color(253,230,86));
+    }//GEN-LAST:event_btn_ingresarMouseMoved
+
+    private void btn_ingresarMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_ingresarMousePressed
+        Validar();
+    }//GEN-LAST:event_btn_ingresarMousePressed
+
+    private void btn_ingresarMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_ingresarMouseExited
+        btn_ingresar.setBackground(new Color(248,184,48));
+    }//GEN-LAST:event_btn_ingresarMouseExited
 
     /**
      * @param args the command line arguments
@@ -287,12 +321,13 @@ public class usuarios extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton ingresar;
+    private javax.swing.JPanel btn_ingresar;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
