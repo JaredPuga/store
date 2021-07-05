@@ -208,16 +208,22 @@ public class sistema extends javax.swing.JFrame {
         nom = cat[0];
         String ca = cat[1];
         String barr = barras.getText();
-        String sql = "Select stock from productos where codigobarras="+barr+";"; //Se actualiza el stock
+        String sql = "Select stock, categoria from productos where codigobarras="+barr+";"; //Se actualiza el stock
         try {
         Statement st = con.createStatement();
         ResultSet res = st.executeQuery(sql);
             while (res.next()) {
-                a = res.getInt(1)-Integer.parseInt(cantidad.getText());
+                if (res.getString(2).equals("Promo")) {
+                    a = res.getInt(1)-(Integer.parseInt(cantidad.getText())*2);
+                } if (res.getString(2).equals("Six")) {
+                    a = res.getInt(1)-(Integer.parseInt(cantidad.getText())*6);
+                } else {
+                    a = res.getInt(1)-Integer.parseInt(cantidad.getText());
+                }
             }
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error de Venta "+e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error de Venta, en stock "+e.getMessage());
         }
         
         /*String sql2 = "Select idproductos from productos where nombre_producto='"+nom+"' and categoria='"+ca+"';"; //Para obtener el id
@@ -259,6 +265,22 @@ public class sistema extends javax.swing.JFrame {
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error de Consulta ID "+e.getMessage());
         }
+    }
+    
+    public void CajaTot() {
+        String sql2 = "Select sum(total) from ventas;";
+            String ven ="";
+            try {
+                Statement st = con.createStatement();
+                ResultSet res = st.executeQuery(sql2);
+                while(res.next()) {
+                    ven = res.getString(1);
+                }          
+            } catch (NumberFormatException | SQLException e) {
+                JOptionPane.showMessageDialog(null, "Error obtener suma total ventas en la impresion"+e.getMessage());
+            }
+            
+            caja2.setText(ven);
     }
     
     public void AgregarProducto() {
@@ -380,8 +402,26 @@ public class sistema extends javax.swing.JFrame {
                    prp+=pre.getText().charAt(i);
                }
            }*/
+        double ca=0;  
+        String sql2 = "select categoria FROM ventas where idventa=(SELECT max(idventa) FROM ventas);";
+        try {
+        Statement st = con.createStatement();
+        ResultSet res = st.executeQuery(sql2);
+            while (res.next()) {
+                if (res.getString(1).equals("Promo")) {
+                    ca = Double.parseDouble(cantidad.getText())*2;
+                } if (res.getString(1).equals("Six")) {
+                    ca = Double.parseDouble(cantidad.getText())*6;
+                } else {
+                    ca = Double.parseDouble(cantidad.getText());
+                }
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error de obtener categoria en ventas"+e.getMessage());
+        }
+           String caa = Double.toString(ca);
            double tot = Double.parseDouble(pre.getText())*Double.parseDouble(cantidad.getText());
-           String sql = "insert into ventas (producto, categoria, cantidad, total) VALUES ('"+np+"', '"+cp+"', "+cantidad.getText()+", "+tot+");";
+           String sql = "insert into ventas (producto, categoria, cantidad, total) VALUES ('"+np+"', '"+cp+"', "+caa+", "+tot+");";
            try {
                Statement st = con.createStatement();
                st.executeUpdate(sql);
@@ -790,6 +830,9 @@ public class sistema extends javax.swing.JFrame {
         jLabel21 = new javax.swing.JLabel();
         jLabel22 = new javax.swing.JLabel();
         calcular = new javax.swing.JButton();
+        jLabel35 = new javax.swing.JLabel();
+        jLabel36 = new javax.swing.JLabel();
+        caja2 = new javax.swing.JLabel();
         Agregar_prod = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
         nombre = new javax.swing.JTextField();
@@ -1191,8 +1234,8 @@ public class sistema extends javax.swing.JFrame {
 
         jLabel18.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel18.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel18.setText("Caja:");
-        Reg_venta.add(jLabel18, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 350, 50, 30));
+        jLabel18.setText("Caja Total:");
+        Reg_venta.add(jLabel18, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 380, 90, 30));
 
         jLabel20.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel20.setForeground(new java.awt.Color(255, 255, 255));
@@ -1224,6 +1267,21 @@ public class sistema extends javax.swing.JFrame {
             }
         });
         Reg_venta.add(calcular, new org.netbeans.lib.awtextra.AbsoluteConstraints(73, 300, 110, 30));
+
+        jLabel35.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        jLabel35.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel35.setText("Caja:");
+        Reg_venta.add(jLabel35, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 350, 50, 30));
+
+        jLabel36.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        jLabel36.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel36.setText("Caja:");
+        Reg_venta.add(jLabel36, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 350, 50, 30));
+
+        caja2.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        caja2.setForeground(new java.awt.Color(255, 255, 255));
+        caja2.setText("0");
+        Reg_venta.add(caja2, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 381, -1, 30));
 
         jPanel1.add(Reg_venta, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 710, 420));
 
@@ -1436,7 +1494,6 @@ public class sistema extends javax.swing.JFrame {
         AgregarProducto_existente.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         AgregarProducto_existente.setForeground(new java.awt.Color(255, 255, 255));
         AgregarProducto_existente.setText("Actualizar Stock");
-        AgregarProducto_existente.setActionCommand("Actualizar Stock");
         AgregarProducto_existente.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         AgregarProducto_existente.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1573,6 +1630,7 @@ public class sistema extends javax.swing.JFrame {
         prod.setModel(llenar());
         MostrarTablaVentas();
         labelfecha.setText(getFecha());
+        CajaTot();
     }//GEN-LAST:event_jLabel2MousePressed
 
     private void jLabel5MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel5MousePressed
@@ -1622,6 +1680,7 @@ public class sistema extends javax.swing.JFrame {
                 vender();
                 ActualizarVentas();
                 MostrarTablaVentas();
+                CajaTot();
                 JOptionPane.showMessageDialog(null, "Venta Exitosa");
             }
         } catch (SQLException e) {
@@ -1722,7 +1781,7 @@ public class sistema extends javax.swing.JFrame {
             Imprimir2(namee);
         }
         
-        //Reset();
+        Reset();
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void combx_prodActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_combx_prodActionPerformed
@@ -1802,6 +1861,7 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JLabel bienvenido;
     private javax.swing.JButton btn_venta;
     private javax.swing.JLabel caja;
+    private javax.swing.JLabel caja2;
     private javax.swing.JButton calcular;
     private javax.swing.JLabel cambio;
     private javax.swing.JTextField cantidad;
@@ -1843,6 +1903,8 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel32;
     private javax.swing.JLabel jLabel33;
     private javax.swing.JLabel jLabel34;
+    private javax.swing.JLabel jLabel35;
+    private javax.swing.JLabel jLabel36;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
