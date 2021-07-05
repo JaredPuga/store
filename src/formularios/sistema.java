@@ -523,8 +523,7 @@ public class sistema extends javax.swing.JFrame {
         try {
             String ruta = System.getProperty("user.home"); //para la ruta principal
             PdfWriter.getInstance(documento, new FileOutputStream(ruta + "/Desktop/"+name)); //Cambiar nombre del reporte
-            
-            Image header = Image.getInstance("src/img/md_fa.png");
+            Image header = Image.getInstance(getClass().getResource("/img/md_fa.png"));
             header.scaleToFit(500, 1000);
             header.setAlignment(Chunk.ALIGN_CENTER);
             
@@ -1781,7 +1780,7 @@ public class sistema extends javax.swing.JFrame {
             Imprimir2(namee);
         }
         
-        Reset();
+        //Reset();
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void combx_prodActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_combx_prodActionPerformed
