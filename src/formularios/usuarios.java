@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
@@ -56,7 +57,8 @@ public class usuarios extends javax.swing.JFrame {
                    this.dispose();
                }
             } else {
-                JOptionPane.showMessageDialog(null, "Usuario o contraseña no validos, intentalo de nuevo");
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/error_ic.png"));
+                JOptionPane.showMessageDialog(null, "Usuario o contraseña no validos, intentalo de nuevo", "Error de sesion", JOptionPane.PLAIN_MESSAGE, iconoo);
                 user.setText(null);
                 pass.setText(null);
             }
@@ -140,6 +142,7 @@ public class usuarios extends javax.swing.JFrame {
         });
 
         btn_ingresar.setBackground(new java.awt.Color(248, 184, 48));
+        btn_ingresar.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
         btn_ingresar.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseMoved(java.awt.event.MouseEvent evt) {
                 btn_ingresarMouseMoved(evt);
@@ -202,14 +205,14 @@ public class usuarios extends javax.swing.JFrame {
                     .addComponent(jSeparator1)
                     .addComponent(pass)
                     .addComponent(jSeparator2))
-                .addContainerGap(107, Short.MAX_VALUE))
+                .addContainerGap(103, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 100, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 96, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel1Layout.createSequentialGroup()

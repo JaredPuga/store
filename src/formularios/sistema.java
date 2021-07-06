@@ -50,6 +50,7 @@ import java.awt.Color;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import javax.swing.Icon;
 
 
 
@@ -60,15 +61,12 @@ import java.io.IOException;
 public class sistema extends javax.swing.JFrame {
     conexionSQL cc = new conexionSQL();
     Connection con = cc.conexion();
-    double cajaa=500;
     
     public sistema() {
         initComponents();
         this.setLocationRelativeTo(null);
         setNombre();
         this.setIconImage(new ImageIcon(getClass().getResource("/img/icon.png")).getImage());
-        cajaa = Double.parseDouble(JOptionPane.showInputDialog(null, "Base de caja: "));
-        caja.setText(Double.toString(cajaa));
         
         b1_vent.setVisible(false);
         b2_agprod.setVisible(false);
@@ -100,7 +98,8 @@ public class sistema extends javax.swing.JFrame {
                 b = rs2.getInt(1);
             }  
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al recibir ID "+e);
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/error_ic.png"));
+           JOptionPane.showMessageDialog(null, "Error al recibir ID "+e, "Error de ID", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
         
         String SQL3 = "Select nombre,apellido from empleados where idempleados="+b+";";
@@ -116,7 +115,8 @@ public class sistema extends javax.swing.JFrame {
             name.setText(nom);
 
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al pasar Nombre"+e);
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/error_ic.png"));
+           JOptionPane.showMessageDialog(null, "Error al pasar Nombre "+e, "Error Nombre", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
     }
     
@@ -153,7 +153,8 @@ public class sistema extends javax.swing.JFrame {
             }
             tabla_productos.setModel(modelo);
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error de Muestra "+e.getMessage());
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/error_db.png"));
+            JOptionPane.showMessageDialog(null, "Error de Muestra de DB "+e, "Error de muestra", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
     }
     
@@ -171,13 +172,14 @@ public class sistema extends javax.swing.JFrame {
           }
           
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al llenar JCombox "+e.getMessage());
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/list.png"));
+           JOptionPane.showMessageDialog(null, "Error al llenar JCombox", "Error JCombox", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
         
         return modelo;
     }
     
-    public void actualizarSuma() {
+    /*public void actualizarSuma() {
         double tventas=0;
         String sql8 = "Select sum(total) from ventas;";
         try {
@@ -197,74 +199,54 @@ public class sistema extends javax.swing.JFrame {
         String vv = Double.toString(tventas);
         caja.setText(vv);
         
-    }
+    }*/
     
     public void vender() throws SQLException {
         String nom;
-        int id=0,a=0;
+        int a=0;
         double tot=0;
         nom = (String) prod.getSelectedItem();  
         String[] cat = nom.split(", ");
         nom = cat[0];
         String ca = cat[1];
         String barr = barras.getText();
-        String sql = "Select stock, categoria from productos where codigobarras="+barr+";"; //Se actualiza el stock
+        String sql = "Select stock, categoria from productos where codigobarras="+barr+" and nombre_producto='"+nom+"';"; //Se actualiza el stock
         try {
         Statement st = con.createStatement();
         ResultSet res = st.executeQuery(sql);
             while (res.next()) {
+                System.out.println(res.getString(2) + " <-- mega o promo");
                 if (res.getString(2).equals("Promo")) {
                     a = res.getInt(1)-(Integer.parseInt(cantidad.getText())*2);
+                    System.out.println(a +"<-- a en promo");
                 } if (res.getString(2).equals("Six")) {
                     a = res.getInt(1)-(Integer.parseInt(cantidad.getText())*6);
-                } else {
+                    System.out.println(a +"<-- a en six");
+                } if (!"Promo".equals(res.getString(2)) && !"Six".equals(res.getString(2))) {
                     a = res.getInt(1)-Integer.parseInt(cantidad.getText());
+                    System.out.println(a +"<-- a en normal");
                 }
             }
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error de Venta, en stock "+e.getMessage());
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/sell_error.png"));
+            JOptionPane.showMessageDialog(null, "Error de venta en Stock", "Error de Stock", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
         
-        /*String sql2 = "Select idproductos from productos where nombre_producto='"+nom+"' and categoria='"+ca+"';"; //Para obtener el id
-        try {
-        Statement st = con.createStatement();
-        ResultSet res = st.executeQuery(sql2);
-            while (res.next()) {
-                id = res.getInt(1);
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error de Consulta ID "+e.getMessage());
-        }*/
         
         String sql3 = "update productos set stock="+a+" where codigobarras="+barr+";"; //Se actualiza el stock
         try {
         Statement st = con.createStatement();
         st.executeUpdate(sql3);
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error de UPDATE "+e.getMessage());
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/error_update.png"));
+            JOptionPane.showMessageDialog(null, "Error de UPDATE en stock "+e, "Error de UPDATE", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
         
         //Para hacer la operacion del calculo de precio final
         
         ActualizarVentas();
-        
-        //Operacion para cajas
-        
-        String sql4 = "SELECT total FROM ventas where idventa=(Select max(idventa) from ventas);";
-        try {
-        Statement st = con.createStatement();
-        ResultSet res = st.executeQuery(sql4);
-            while (res.next()) {
-                tot = Double.parseDouble(res.getString(1));
-                System.out.println(tot);
-                cajaa+=tot;
-                System.out.println(cajaa);
-                caja.setText(Double.toString(cajaa));
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error de Consulta ID "+e.getMessage());
-        }
+    
     }
     
     public void CajaTot() {
@@ -277,7 +259,8 @@ public class sistema extends javax.swing.JFrame {
                     ven = res.getString(1);
                 }          
             } catch (NumberFormatException | SQLException e) {
-                JOptionPane.showMessageDialog(null, "Error obtener suma total ventas en la impresion"+e.getMessage());
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/sell_error.png"));
+                JOptionPane.showMessageDialog(null, "Erro al obtener la suma total ventas en la impresion "+e, "Error de suma", JOptionPane.PLAIN_MESSAGE, iconoo);
             }
             
             caja2.setText(ven);
@@ -290,7 +273,8 @@ public class sistema extends javax.swing.JFrame {
         try {
         Statement st = con.createStatement();
         st.executeUpdate(sql);
-        JOptionPane.showMessageDialog(null, "Producto Agregado Correctamente");
+        Icon iconoo = new ImageIcon(getClass().getResource("/img/paloma.png"));
+        JOptionPane.showMessageDialog(null, "Producto Agregado Correctamente", "Agregando Producto", JOptionPane.PLAIN_MESSAGE, iconoo);
         nombre.setText(null);
         barras_nuevo.setText(null);
         contenido.setText(null);
@@ -299,7 +283,8 @@ public class sistema extends javax.swing.JFrame {
         stock.setText(null);
         
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error agregando producto "+e.getMessage());
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/indavild.png"));
+            JOptionPane.showMessageDialog(null, "Error agregando producto "+e, "Error en productos", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
         
         
@@ -333,7 +318,8 @@ public class sistema extends javax.swing.JFrame {
             }
             tabla_ventas.setModel(modelo);
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error de Muestra "+e.getMessage());
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/error_db.png"));
+            JOptionPane.showMessageDialog(null, "Error de Muestra DB1 "+e, "Error de DB", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
     }
     
@@ -381,13 +367,15 @@ public class sistema extends javax.swing.JFrame {
             }
             if (ee==0) {
                 prod.setSelectedIndex(0);
-                JOptionPane.showMessageDialog(null, "Error, el producto no existe ");
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/pro_no.png"));
+                JOptionPane.showMessageDialog(null, "Error, el producto no existe ", "Error producto inexistente", JOptionPane.PLAIN_MESSAGE, iconoo);
                 pre.setText("0.0");
             } else {
                 prod.setSelectedIndex(ee+1);
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error, el producto no existe ");
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/pro_no.png"));
+            JOptionPane.showMessageDialog(null, "Error, el producto no existe "+e, "Error producto inexistente", JOptionPane.PLAIN_MESSAGE, iconoo);
         }  
     }
     
@@ -402,26 +390,9 @@ public class sistema extends javax.swing.JFrame {
                    prp+=pre.getText().charAt(i);
                }
            }*/
-        double ca=0;  
-        String sql2 = "select categoria FROM ventas where idventa=(SELECT max(idventa) FROM ventas);";
-        try {
-        Statement st = con.createStatement();
-        ResultSet res = st.executeQuery(sql2);
-            while (res.next()) {
-                if (res.getString(1).equals("Promo")) {
-                    ca = Double.parseDouble(cantidad.getText())*2;
-                } if (res.getString(1).equals("Six")) {
-                    ca = Double.parseDouble(cantidad.getText())*6;
-                } else {
-                    ca = Double.parseDouble(cantidad.getText());
-                }
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error de obtener categoria en ventas"+e.getMessage());
-        }
-           String caa = Double.toString(ca);
+        
            double tot = Double.parseDouble(pre.getText())*Double.parseDouble(cantidad.getText());
-           String sql = "insert into ventas (producto, categoria, cantidad, total) VALUES ('"+np+"', '"+cp+"', "+caa+", "+tot+");";
+           String sql = "insert into ventas (producto, categoria, cantidad, total) VALUES ('"+np+"', '"+cp+"', "+cantidad.getText()+", "+tot+");";
            try {
                Statement st = con.createStatement();
                st.executeUpdate(sql);
@@ -432,9 +403,11 @@ public class sistema extends javax.swing.JFrame {
                precio.setText(null);
                cambio.setText(null);
                efectivo.setText(null);
-               JOptionPane.showMessageDialog(null, "Venta agregada Correctamente");
+               Icon iconoo = new ImageIcon(getClass().getResource("/img/ok.png"));
+               JOptionPane.showMessageDialog(null, "Venta agregada Correctamente ", "Venta exitosa", JOptionPane.PLAIN_MESSAGE, iconoo);
            } catch (SQLException e) {
-               JOptionPane.showMessageDialog(null, "Error agregando venta "+e.getMessage());
+               Icon iconoo = new ImageIcon(getClass().getResource("/img/invalid.png"));
+                JOptionPane.showMessageDialog(null, "Error agredando venta", "Error en venta", JOptionPane.PLAIN_MESSAGE, iconoo);
            }
            
         }
@@ -481,7 +454,8 @@ public class sistema extends javax.swing.JFrame {
             }
             tabla_caja.setModel(modelo);
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error de Muestra "+e.getMessage());
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/error_db.png"));
+            JOptionPane.showMessageDialog(null, "Error de muestra db", "Error en db", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
     }
     
@@ -512,7 +486,8 @@ public class sistema extends javax.swing.JFrame {
             try {
                 printerjob.print();
             } catch (PrinterException printerException ) {
-                JOptionPane.showMessageDialog(null, "Error de impresion: "+printerException.getMessage());
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/error_print.png"));
+                JOptionPane.showMessageDialog(null, "Error de impresion "+printerException.getMessage(), "Error al imprimir", JOptionPane.PLAIN_MESSAGE, iconoo);
             }
         }
     }
@@ -654,7 +629,8 @@ public class sistema extends javax.swing.JFrame {
                 }
        
             } catch (SQLException e) {
-                JOptionPane.showMessageDialog(null, "Error Generando PDF"+e.getMessage());
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/pdf.png"));
+                JOptionPane.showMessageDialog(null, "Error generando PDF ", "Error PDF", JOptionPane.PLAIN_MESSAGE, iconoo);
             }
             
             
@@ -667,7 +643,8 @@ public class sistema extends javax.swing.JFrame {
                     ven = res.getString(1);
                 }          
             } catch (NumberFormatException | SQLException e) {
-                JOptionPane.showMessageDialog(null, "Error obtener suma total ventas en la impresion"+e.getMessage());
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/error_print"));
+                JOptionPane.showMessageDialog(null, "Error al obtener suma total ventas en la impresion "+e, "Error suma impresion", JOptionPane.PLAIN_MESSAGE, iconoo);
             }
             
             Paragraph parrafo2 = new Paragraph();
@@ -686,7 +663,8 @@ public class sistema extends javax.swing.JFrame {
             parrafo4.add(texto_nota.getText());
             documento.add(parrafo4);
             documento.close();
-            JOptionPane.showMessageDialog(null, "Reporte generado Exitosamente");
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/ok.png"));
+            JOptionPane.showMessageDialog(null, "Reporte generado Exitosamente", "Generando Reporte", JOptionPane.PLAIN_MESSAGE, iconoo);
         } catch (DocumentException | HeadlessException | FileNotFoundException ee) {
             JOptionPane.showMessageDialog(null, "Error generando PDF 2e"+ee.getMessage());
         } catch (IOException img) {
@@ -702,7 +680,8 @@ public class sistema extends javax.swing.JFrame {
            try {
                Statement st = con.createStatement();
                st.execute(sql);
-               JOptionPane.showMessageDialog(null, "Las ventas se han limpiado");
+               Icon iconoo = new ImageIcon(getClass().getResource("/img/escoba.png"));
+               JOptionPane.showMessageDialog(null, "Las ventas se han limpiado ", "Limpiando Ventas", JOptionPane.PLAIN_MESSAGE, iconoo);
            } catch (SQLException e) {
                JOptionPane.showMessageDialog(null, "Error limpiando ventas"+e.getMessage());
            }
@@ -737,7 +716,8 @@ public class sistema extends javax.swing.JFrame {
                    stock_existente.setText(s);
                }
            } catch (SQLException e) {
-           JOptionPane.showMessageDialog(null, "Error, el producto no existe en JCombox, no se puede agregar productos");
+           Icon iconoo = new ImageIcon(getClass().getResource("/img/list.png"));
+           JOptionPane.showMessageDialog(null, "Error, el producto no existe en JCombox, no se puede agregar productos", "Error JCombox", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
        }
     }
@@ -750,6 +730,8 @@ public class sistema extends javax.swing.JFrame {
         try {
         Statement st = con.createStatement();
         st.executeUpdate(sql);
+        Icon iconoo = new ImageIcon(getClass().getResource("/img/ok.png"));
+        JOptionPane.showMessageDialog(null, "Productos agregados al stock correctamente", "Stock Actualizado", JOptionPane.PLAIN_MESSAGE, iconoo);
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error de UPDATE en agregar productos, stock "+e.getMessage());
         }
@@ -765,6 +747,8 @@ public class sistema extends javax.swing.JFrame {
         try {
         Statement st = con.createStatement();
         st.executeUpdate(sql);
+        Icon iconoo = new ImageIcon(getClass().getResource("/img/ok.png"));
+        JOptionPane.showMessageDialog(null, "Precio actualizado correctamente", "Precio Actualizado", JOptionPane.PLAIN_MESSAGE, iconoo);
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error de UPDATE en actualizar Precio "+e.getMessage());
         }
@@ -806,7 +790,6 @@ public class sistema extends javax.swing.JFrame {
         Reg_venta = new javax.swing.JPanel();
         barras = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
-        btn_venta = new javax.swing.JButton();
         prod = new javax.swing.JComboBox<>();
         jLabel8 = new javax.swing.JLabel();
         cantidad = new javax.swing.JTextField();
@@ -821,17 +804,20 @@ public class sistema extends javax.swing.JFrame {
         cambio = new javax.swing.JLabel();
         jSeparator7 = new javax.swing.JSeparator();
         jSeparator8 = new javax.swing.JSeparator();
-        caja = new javax.swing.JLabel();
         jLabel18 = new javax.swing.JLabel();
         jLabel20 = new javax.swing.JLabel();
         efectivo = new javax.swing.JTextField();
         jSeparator9 = new javax.swing.JSeparator();
         jLabel21 = new javax.swing.JLabel();
         jLabel22 = new javax.swing.JLabel();
-        calcular = new javax.swing.JButton();
+        caja2 = new javax.swing.JLabel();
         jLabel35 = new javax.swing.JLabel();
         jLabel36 = new javax.swing.JLabel();
-        caja2 = new javax.swing.JLabel();
+        jLabel38 = new javax.swing.JLabel();
+        btn_ventaaa = new javax.swing.JPanel();
+        btn_ventaa = new javax.swing.JLabel();
+        btn_calcularr = new javax.swing.JPanel();
+        btn_calcular = new javax.swing.JLabel();
         Agregar_prod = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
         nombre = new javax.swing.JTextField();
@@ -1131,14 +1117,6 @@ public class sistema extends javax.swing.JFrame {
         jLabel7.setText("Codigo de Barras:");
         Reg_venta.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 40, 140, -1));
 
-        btn_venta.setLabel("Vender");
-        btn_venta.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn_ventaActionPerformed(evt);
-            }
-        });
-        Reg_venta.add(btn_venta, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 300, 120, 30));
-
         prod.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 prodActionPerformed(evt);
@@ -1218,23 +1196,18 @@ public class sistema extends javax.swing.JFrame {
 
         pre.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         pre.setForeground(new java.awt.Color(255, 255, 255));
-        Reg_venta.add(pre, new org.netbeans.lib.awtextra.AbsoluteConstraints(152, 170, 60, -1));
+        Reg_venta.add(pre, new org.netbeans.lib.awtextra.AbsoluteConstraints(162, 170, 50, -1));
 
         cambio.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         cambio.setForeground(new java.awt.Color(255, 255, 255));
-        Reg_venta.add(cambio, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 250, 70, -1));
+        Reg_venta.add(cambio, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 250, 60, -1));
         Reg_venta.add(jSeparator7, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 60, 130, 10));
         Reg_venta.add(jSeparator8, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 230, 50, 10));
-
-        caja.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
-        caja.setForeground(new java.awt.Color(255, 255, 255));
-        caja.setText("0");
-        Reg_venta.add(caja, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 350, 100, 30));
 
         jLabel18.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel18.setForeground(new java.awt.Color(255, 255, 255));
         jLabel18.setText("Caja Total:");
-        Reg_venta.add(jLabel18, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 380, 90, 30));
+        Reg_venta.add(jLabel18, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 360, 90, 30));
 
         jLabel20.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel20.setForeground(new java.awt.Color(255, 255, 255));
@@ -1259,28 +1232,99 @@ public class sistema extends javax.swing.JFrame {
         jLabel22.setText("Cambio:");
         Reg_venta.add(jLabel22, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 250, 70, -1));
 
-        calcular.setText("Calcular");
-        calcular.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                calcularActionPerformed(evt);
-            }
-        });
-        Reg_venta.add(calcular, new org.netbeans.lib.awtextra.AbsoluteConstraints(73, 300, 110, 30));
-
-        jLabel35.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
-        jLabel35.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel35.setText("Caja:");
-        Reg_venta.add(jLabel35, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 350, 50, 30));
-
-        jLabel36.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
-        jLabel36.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel36.setText("Caja:");
-        Reg_venta.add(jLabel36, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 350, 50, 30));
-
         caja2.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         caja2.setForeground(new java.awt.Color(255, 255, 255));
         caja2.setText("0");
-        Reg_venta.add(caja2, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 381, -1, 30));
+        Reg_venta.add(caja2, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 360, -1, 30));
+
+        jLabel35.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/calc.png"))); // NOI18N
+        Reg_venta.add(jLabel35, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 300, 40, 50));
+
+        jLabel36.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/sell.png"))); // NOI18N
+        Reg_venta.add(jLabel36, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 300, 40, 50));
+
+        jLabel38.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        jLabel38.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel38.setText("$");
+        Reg_venta.add(jLabel38, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 170, -1, -1));
+
+        btn_ventaaa.setBackground(new java.awt.Color(248, 184, 48));
+        btn_ventaaa.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        btn_ventaaa.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent evt) {
+                btn_ventaaaMouseMoved(evt);
+            }
+        });
+        btn_ventaaa.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btn_ventaaaMouseExited(evt);
+            }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                btn_ventaaaMousePressed(evt);
+            }
+        });
+
+        btn_ventaa.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        btn_ventaa.setForeground(new java.awt.Color(10, 34, 64));
+        btn_ventaa.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        btn_ventaa.setText("Vender");
+
+        javax.swing.GroupLayout btn_ventaaaLayout = new javax.swing.GroupLayout(btn_ventaaa);
+        btn_ventaaa.setLayout(btn_ventaaaLayout);
+        btn_ventaaaLayout.setHorizontalGroup(
+            btn_ventaaaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(btn_ventaaaLayout.createSequentialGroup()
+                .addGap(30, 30, 30)
+                .addComponent(btn_ventaa)
+                .addContainerGap(32, Short.MAX_VALUE))
+        );
+        btn_ventaaaLayout.setVerticalGroup(
+            btn_ventaaaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, btn_ventaaaLayout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(btn_ventaa, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        Reg_venta.add(btn_ventaaa, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 310, 120, 30));
+
+        btn_calcularr.setBackground(new java.awt.Color(248, 184, 48));
+        btn_calcularr.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        btn_calcularr.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent evt) {
+                btn_calcularrMouseMoved(evt);
+            }
+        });
+        btn_calcularr.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btn_calcularrMouseExited(evt);
+            }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                btn_calcularrMousePressed(evt);
+            }
+        });
+
+        btn_calcular.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        btn_calcular.setForeground(new java.awt.Color(10, 34, 64));
+        btn_calcular.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        btn_calcular.setText("Calcular");
+
+        javax.swing.GroupLayout btn_calcularrLayout = new javax.swing.GroupLayout(btn_calcularr);
+        btn_calcularr.setLayout(btn_calcularrLayout);
+        btn_calcularrLayout.setHorizontalGroup(
+            btn_calcularrLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(btn_calcularrLayout.createSequentialGroup()
+                .addGap(19, 19, 19)
+                .addComponent(btn_calcular, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(25, Short.MAX_VALUE))
+        );
+        btn_calcularrLayout.setVerticalGroup(
+            btn_calcularrLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, btn_calcularrLayout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(btn_calcular, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        Reg_venta.add(btn_calcularr, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 310, 110, 30));
 
         jPanel1.add(Reg_venta, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 710, 420));
 
@@ -1550,19 +1594,19 @@ public class sistema extends javax.swing.JFrame {
         tabla_caja.getTableHeader().setReorderingAllowed(false);
         jScrollPane3.setViewportView(tabla_caja);
 
-        cerrar_caja.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 90, 710, 240));
+        cerrar_caja.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 50, 710, 250));
 
         jPanel9.setBackground(new java.awt.Color(10, 34, 64));
         jPanel9.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         fecha.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
         fecha.setForeground(new java.awt.Color(255, 255, 255));
-        jPanel9.add(fecha, new org.netbeans.lib.awtextra.AbsoluteConstraints(355, 11, 193, 78));
+        jPanel9.add(fecha, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 0, 193, 50));
 
         jLabel19.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
         jLabel19.setForeground(new java.awt.Color(255, 255, 255));
         jLabel19.setText("Ventas del dia");
-        jPanel9.add(jLabel19, new org.netbeans.lib.awtextra.AbsoluteConstraints(205, 11, 160, 78));
+        jPanel9.add(jLabel19, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 160, 50));
 
         cerrar_caja.add(jPanel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 710, -1));
 
@@ -1579,7 +1623,7 @@ public class sistema extends javax.swing.JFrame {
         jLabel24.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
         jLabel24.setForeground(new java.awt.Color(255, 255, 255));
         jLabel24.setText("Nota:");
-        cerrar_caja.add(jLabel24, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 330, -1, -1));
+        cerrar_caja.add(jLabel24, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 320, -1, -1));
 
         jScrollPane2.setFont(new java.awt.Font("Berlin Sans FB", 0, 14)); // NOI18N
 
@@ -1588,7 +1632,7 @@ public class sistema extends javax.swing.JFrame {
         texto_nota.setRows(5);
         jScrollPane2.setViewportView(texto_nota);
 
-        cerrar_caja.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 330, 370, 80));
+        cerrar_caja.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 320, 370, 80));
 
         jPanel1.add(cerrar_caja, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 710, 420));
 
@@ -1671,30 +1715,14 @@ public class sistema extends javax.swing.JFrame {
         fecha.setText(getFecha());
     }//GEN-LAST:event_jLabel3MousePressed
 
-    private void btn_ventaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_ventaActionPerformed
-        try {
-            if (cantidad.getText().isEmpty() || prod.getSelectedItem().equals("Seleccionar")) {
-                JOptionPane.showMessageDialog(null, "Campos vacios, por favor llena todos los campos");
-            } else {
-                vender();
-                ActualizarVentas();
-                MostrarTablaVentas();
-                CajaTot();
-                JOptionPane.showMessageDialog(null, "Venta Exitosa");
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error de UPDATE en funcion Vender del BTN "+e.getMessage());
-        }
-    }//GEN-LAST:event_btn_ventaActionPerformed
-
     private void precioKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_precioKeyTyped
         char validar = evt.getKeyChar();
         
         if (Character.isLetter(validar)) {
             getToolkit().beep();
             evt.consume();
-            
-            JOptionPane.showMessageDialog(null, "Solo numeros para el precio");
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/invalid.png"));
+            JOptionPane.showMessageDialog(null, "Solo numeros para el precio", "Solo numeros", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
     }//GEN-LAST:event_precioKeyTyped
 
@@ -1704,7 +1732,8 @@ public class sistema extends javax.swing.JFrame {
         if (Character.isLetter(validar)) {
             getToolkit().beep();
             evt.consume();
-            JOptionPane.showMessageDialog(null, "Solo numeros para el precio");
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/invalid.png"));
+            JOptionPane.showMessageDialog(null, "Solo numeros para el precio", "Solo numeros", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
     }//GEN-LAST:event_contenidoKeyTyped
 
@@ -1737,7 +1766,8 @@ public class sistema extends javax.swing.JFrame {
             getToolkit().beep();
             evt.consume();
             
-            JOptionPane.showMessageDialog(null, "Solo numeros para el precio");
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/invalid.png"));
+            JOptionPane.showMessageDialog(null, "Solo numeros para el precio", "Solo numeros", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
     }//GEN-LAST:event_barrasKeyTyped
 
@@ -1768,19 +1798,14 @@ public class sistema extends javax.swing.JFrame {
        
     }//GEN-LAST:event_prodActionPerformed
 
-    private void calcularActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_calcularActionPerformed
-        Calcular();
-    }//GEN-LAST:event_calcularActionPerformed
-
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
-        //ImprimirCaja(cerrar_caja);
+
         String namee = "Reporte_"+getFecha2()+".pdf";
         if (JOptionPane.showConfirmDialog(null, "Está usted seguro de que quiere cerrar caja?")==0 ) {
             Imprimir2(namee);
-        }
-        
-        //Reset();
+            Reset();
+            texto_nota.setText(null);
+        }  
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void combx_prodActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_combx_prodActionPerformed
@@ -1802,6 +1827,48 @@ public class sistema extends javax.swing.JFrame {
         precio_existente.setText(null);
         stock_existente.setText(null);
     }//GEN-LAST:event_AgregarProducto_existenteActionPerformed
+
+    private void btn_calcularrMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_calcularrMouseExited
+        btn_calcularr.setBackground(new Color(248,184,48));
+    }//GEN-LAST:event_btn_calcularrMouseExited
+
+    private void btn_ventaaaMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_ventaaaMouseExited
+        btn_ventaaa.setBackground(new Color(248,184,48));
+    }//GEN-LAST:event_btn_ventaaaMouseExited
+
+    private void btn_ventaaaMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_ventaaaMouseMoved
+        btn_ventaaa.setBackground(new Color(253,230,86));
+    }//GEN-LAST:event_btn_ventaaaMouseMoved
+
+    private void btn_calcularrMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_calcularrMouseMoved
+        btn_calcularr.setBackground(new Color(253,230,86));
+    }//GEN-LAST:event_btn_calcularrMouseMoved
+
+    private void btn_ventaaaMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_ventaaaMousePressed
+        try {
+            if (cantidad.getText().isEmpty() || prod.getSelectedItem().equals("Seleccionar")) {
+                JOptionPane.showMessageDialog(null, "Campos vacios, por favor llena todos los campos");
+            } else {
+                vender();
+                ActualizarVentas();
+                MostrarTablaVentas();
+                CajaTot();
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error de UPDATE en funcion Vender del BTN "+e.getMessage());
+        }
+    }//GEN-LAST:event_btn_ventaaaMousePressed
+
+    private void btn_calcularrMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_calcularrMousePressed
+       if (efectivo.getText()==null) {
+           Icon iconoo = new ImageIcon(getClass().getResource("/img/indavild.png"));
+           JOptionPane.showMessageDialog(null, "Campos vacios, por favor llena todos los campos", "Error de calculo", JOptionPane.PLAIN_MESSAGE, iconoo);
+          
+           
+       } else {
+            Calcular();
+       }
+    }//GEN-LAST:event_btn_calcularrMousePressed
 
     /**
      * @param args the command line arguments
@@ -1858,10 +1925,11 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JTextField barras_existente;
     private javax.swing.JTextField barras_nuevo;
     private javax.swing.JLabel bienvenido;
-    private javax.swing.JButton btn_venta;
-    private javax.swing.JLabel caja;
+    private javax.swing.JLabel btn_calcular;
+    private javax.swing.JPanel btn_calcularr;
+    private javax.swing.JLabel btn_ventaa;
+    private javax.swing.JPanel btn_ventaaa;
     private javax.swing.JLabel caja2;
-    private javax.swing.JButton calcular;
     private javax.swing.JLabel cambio;
     private javax.swing.JTextField cantidad;
     private javax.swing.JTextField categoria;
@@ -1904,6 +1972,7 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel34;
     private javax.swing.JLabel jLabel35;
     private javax.swing.JLabel jLabel36;
+    private javax.swing.JLabel jLabel38;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
