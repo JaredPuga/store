@@ -45,6 +45,7 @@ import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
+import com.sun.glass.events.KeyEvent;
 import java.awt.Color;
         
 import java.io.FileNotFoundException;
@@ -179,28 +180,6 @@ public class sistema extends javax.swing.JFrame {
         return modelo;
     }
     
-    /*public void actualizarSuma() {
-        double tventas=0;
-        String sql8 = "Select sum(total) from ventas;";
-        try {
-          Statement st = con.createStatement();
-          ResultSet res = st.executeQuery(sql8);
-          while(res.next()) {
-              if(res.getString(1)==null) {
-                  caja.setText("0");
-              } else {
-                tventas = Double.parseDouble(res.getString(1));
-              }
-          }          
-        } catch (NumberFormatException | SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error obtener suma total ventas"+e.getMessage());
-        }
-        
-        String vv = Double.toString(tventas);
-        caja.setText(vv);
-        
-    }*/
-    
     public void vender() throws SQLException {
         String nom;
         int a=0;
@@ -210,7 +189,7 @@ public class sistema extends javax.swing.JFrame {
         nom = cat[0];
         String ca = cat[1];
         String barr = barras.getText();
-        String sql = "Select stock, categoria from productos where codigobarras="+barr+" and nombre_producto='"+nom+"';"; //Se actualiza el stock
+        String sql = "Select stock, categoria from productos where codigobarras="+barr+" and nombre_producto='"+nom+"' and categoria='"+ca+"';"; //Se actualiza el stock
         try {
         Statement st = con.createStatement();
         ResultSet res = st.executeQuery(sql);
@@ -222,10 +201,16 @@ public class sistema extends javax.swing.JFrame {
                 } if (res.getString(2).equals("Six")) {
                     a = res.getInt(1)-(Integer.parseInt(cantidad.getText())*6);
                     System.out.println(a +"<-- a en six");
-                } if (!"Promo".equals(res.getString(2)) && !"Six".equals(res.getString(2))) {
+                } if (res.getString(2).equals("Doce")) {
+                    a = res.getInt(1)-(Integer.parseInt(cantidad.getText())*12);
+                    System.out.println(a +"<-- a en Doce");
+                } if (res.getString(2).equals("Caja")) {
+                    a = res.getInt(1)-(Integer.parseInt(cantidad.getText())*24);
+                    System.out.println(a +"<-- a en Caja");
+                } if (!"Promo".equals(res.getString(2)) && !"Six".equals(res.getString(2)) && !"Doce".equals(res.getString(2)) && !"Caja".equals(res.getString(2))) {
                     a = res.getInt(1)-Integer.parseInt(cantidad.getText());
                     System.out.println(a +"<-- a en normal");
-                }
+                }   
             }
             
         } catch (SQLException e) {
@@ -269,7 +254,7 @@ public class sistema extends javax.swing.JFrame {
     public void AgregarProducto() {
         double pr = Double.parseDouble(precio.getText());
         int sto = Integer.parseInt(stock.getText());
-        String sql = "insert into productos (codigobarras, nombre_producto, contenido, precio, categoria, stock) VALUES ("+barras_existente.getText()+",'"+nombre.getText()+"', '"+contenido.getText()+"', '"+pr+"', '"+categoria.getText()+"', '"+sto+"');";
+        String sql = "insert into productos (codigobarras, nombre_producto, contenido, precio, categoria, stock) VALUES ("+barras_nuevo.getText()+",'"+nombre.getText()+"', '"+contenido.getText()+"', '"+pr+"', '"+categoria.getText()+"', '"+sto+"');";
         try {
         Statement st = con.createStatement();
         st.executeUpdate(sql);
@@ -283,7 +268,7 @@ public class sistema extends javax.swing.JFrame {
         stock.setText(null);
         
         } catch (SQLException e) {
-            Icon iconoo = new ImageIcon(getClass().getResource("/img/indavild.png"));
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/invalid.png"));
             JOptionPane.showMessageDialog(null, "Error agregando producto "+e, "Error en productos", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
         
@@ -498,7 +483,7 @@ public class sistema extends javax.swing.JFrame {
         try {
             String ruta = System.getProperty("user.home"); //para la ruta principal
             PdfWriter.getInstance(documento, new FileOutputStream(ruta + "/Desktop/"+name)); //Cambiar nombre del reporte
-            Image header = Image.getInstance(getClass().getResource("/img/md_fa.png"));
+            Image header = Image.getInstance(getClass().getResource("/img/model.png"));
             header.scaleToFit(500, 1000);
             header.setAlignment(Chunk.ALIGN_CENTER);
             
@@ -511,7 +496,14 @@ public class sistema extends javax.swing.JFrame {
             documento.add(parrafo);
             
             PdfPTable tabla = new PdfPTable(5);
+            PdfPTable tabla_Prod = new PdfPTable(5);
+            PdfPTable tabla_pagos = new PdfPTable(5);
+            
+            
             tabla.setWidthPercentage(100);
+            tabla_Prod.setWidthPercentage(100);
+            tabla_pagos.setWidthPercentage(100);
+            
             Font f = FontFactory.getFont(FontFactory.COURIER);
             f.setColor(BaseColor.WHITE);
             Font f2 = FontFactory.getFont(FontFactory.COURIER);
@@ -562,21 +554,44 @@ public class sistema extends javax.swing.JFrame {
             total.setPaddingTop(15);
             total.setBorderWidth(0);
             
+            //TABLA VENTAS CERVEZA
+            
             tabla.addCell(venta);
             tabla.addCell(producto);
             tabla.addCell(categoriaa);
             tabla.addCell(cantidadd);
             tabla.addCell(total);
             
-            String sql="SELECT idventa, producto, categoria, cantidad, total FROM ventas Order by idventa;";
+            //TABLA PRODUCTOS
+            
+            tabla_Prod.addCell(venta);
+            tabla_Prod.addCell(producto);
+            tabla_Prod.addCell(categoriaa);
+            tabla_Prod.addCell(cantidadd);
+            tabla_Prod.addCell(total);
+            
+            //TABLA PAGOS
+            
+            tabla_pagos.addCell(venta);
+            tabla_pagos.addCell(producto);
+            tabla_pagos.addCell(categoriaa);
+            tabla_pagos.addCell(cantidadd);
+            tabla_pagos.addCell(total);
+            
+            String cerveza="categoria='Mega' OR categoria='Promo' OR categoria='Medias' OR categoria='Six' OR categoria='Familiar' OR categoria='Cuartitas' OR categoria='Doce' OR categoria='Caja' OR categoria='Bote' OR categoria='Latones' OR categoria='710'";
+            String productos = "categoria='Bebidas' OR categoria='Botanas' or categoria='Deposito' OR categoria='Cigarro'";
+            String pagos = "categoria='Deposito Dev' OR categoria='Pago'";
+            
+            String sql="SELECT idventa, producto, categoria, cantidad, total FROM ventas where "+cerveza+" ORDER BY idventa;";
             try {
                 Statement st = con.createStatement();
                 ResultSet res = st.executeQuery(sql);
-                
+                int id_v = 0;
                 if (res.next()) {
                     do {
-                        PdfPCell idd = new PdfPCell(new Phrase(res.getString(1),f2)); //IDVENTA
-                        if (Integer.parseInt(res.getString(1))%2==0) {
+                        id_v++;
+                        PdfPCell idd = new PdfPCell(new Phrase(Integer.toString(id_v),f2)); //IDVENTA
+                        if (id_v%2==0) {
                             idd.setBackgroundColor(tab1);
                         } else {
                             idd.setBackgroundColor(tab2);
@@ -586,7 +601,7 @@ public class sistema extends javax.swing.JFrame {
                         tabla.addCell(idd);
                         
                         PdfPCell proo = new PdfPCell(new Phrase(res.getString(2),f2)); //NOMBRE PRODUCTO
-                        if (Integer.parseInt(res.getString(1))%2==0) {
+                        if (id_v%2==0) {
                             proo.setBackgroundColor(tab1);
                         } else {
                             proo.setBackgroundColor(tab2);
@@ -596,7 +611,7 @@ public class sistema extends javax.swing.JFrame {
                         tabla.addCell(proo);
                         
                         PdfPCell cat = new PdfPCell(new Phrase(res.getString(3),f2)); //CATEGORIA
-                        if (Integer.parseInt(res.getString(1))%2==0) {
+                        if (id_v%2==0) {
                             cat.setBackgroundColor(tab1);
                         } else {
                             cat.setBackgroundColor(tab2);
@@ -606,7 +621,7 @@ public class sistema extends javax.swing.JFrame {
                         tabla.addCell(cat);
                         
                         PdfPCell cant = new PdfPCell(new Phrase(res.getString(4),f2)); //CANTIDAD
-                        if (Integer.parseInt(res.getString(1))%2==0) {
+                        if (id_v%2==0) {
                             cant.setBackgroundColor(tab1);
                         } else {
                             cant.setBackgroundColor(tab2);
@@ -616,7 +631,7 @@ public class sistema extends javax.swing.JFrame {
                         tabla.addCell(cant);
                         
                         PdfPCell prr = new PdfPCell(new Phrase("$ "+res.getString(5),f2)); //PRECIO
-                        if (Integer.parseInt(res.getString(1))%2==0) {
+                        if (id_v%2==0) {
                             prr.setBackgroundColor(tab1);
                         } else {
                             prr.setBackgroundColor(tab2);
@@ -633,34 +648,232 @@ public class sistema extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "Error generando PDF ", "Error PDF", JOptionPane.PLAIN_MESSAGE, iconoo);
             }
             
+            //TABLA PRODUCTOS
             
-            String sql2 = "Select sum(total) from ventas;";
-            String ven ="";
+            String sql2="SELECT * FROM ventas where "+productos+" ORDER BY idventa;";
             try {
                 Statement st = con.createStatement();
                 ResultSet res = st.executeQuery(sql2);
+                int id_v = 0;
+                if (res.next()) {
+                    do {
+                        id_v++;
+                        PdfPCell idd = new PdfPCell(new Phrase(Integer.toString(id_v),f2)); //IDVENTA
+                        if (id_v%2==0) {
+                            idd.setBackgroundColor(tab1);
+                        } else {
+                            idd.setBackgroundColor(tab2);
+                        }
+                        idd.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        idd.setBorderWidth(0);
+                        tabla_Prod.addCell(idd);
+                        
+                        PdfPCell proo = new PdfPCell(new Phrase(res.getString(2),f2)); //NOMBRE PRODUCTO
+                        if (id_v%2==0) {
+                            proo.setBackgroundColor(tab1);
+                        } else {
+                            proo.setBackgroundColor(tab2);
+                        }
+                        proo.setHorizontalAlignment(Element.ALIGN_LEFT);
+                        proo.setBorderWidth(0);
+                        tabla_Prod.addCell(proo);
+                        
+                        PdfPCell cat = new PdfPCell(new Phrase(res.getString(3),f2)); //CATEGORIA
+                        if (id_v%2==0) {
+                            cat.setBackgroundColor(tab1);
+                        } else {
+                            cat.setBackgroundColor(tab2);
+                        }
+                        cat.setHorizontalAlignment(Element.ALIGN_LEFT);
+                        cat.setBorderWidth(0);
+                        tabla_Prod.addCell(cat);
+                        
+                        PdfPCell cant = new PdfPCell(new Phrase(res.getString(4),f2)); //CANTIDAD
+                        if (id_v%2==0) {
+                            cant.setBackgroundColor(tab1);
+                        } else {
+                            cant.setBackgroundColor(tab2);
+                        }
+                        cant.setHorizontalAlignment(Element.ALIGN_LEFT);
+                        cant.setBorderWidth(0);
+                        tabla_Prod.addCell(cant);
+                        
+                        PdfPCell prr = new PdfPCell(new Phrase("$ "+res.getString(5),f2)); //PRECIO
+                        if (id_v%2==0) {
+                            prr.setBackgroundColor(tab1);
+                        } else {
+                            prr.setBackgroundColor(tab2);
+                        }
+                        prr.setHorizontalAlignment(Element.ALIGN_LEFT);
+                        prr.setBorderWidth(0);
+                        tabla_Prod.addCell(prr);
+                    } while (res.next());
+                }
+       
+            } catch (SQLException e) {
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/pdf.png"));
+                JOptionPane.showMessageDialog(null, "Error generando PDF ", "Error PDF", JOptionPane.PLAIN_MESSAGE, iconoo);
+            }
+            
+            //TABLA PAGOS
+            
+            String sql25="SELECT * FROM ventas where "+pagos+" ORDER BY idventa;";
+            try {
+                Statement st = con.createStatement();
+                ResultSet res = st.executeQuery(sql25);
+                int id_v = 0;
+                if (res.next()) {
+                    do {
+                        id_v++;
+                        PdfPCell idd = new PdfPCell(new Phrase(Integer.toString(id_v),f2)); //IDVENTA
+                        if (id_v%2==0) {
+                            idd.setBackgroundColor(tab1);
+                        } else {
+                            idd.setBackgroundColor(tab2);
+                        }
+                        idd.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        idd.setBorderWidth(0);
+                        tabla_pagos.addCell(idd);
+                        
+                        PdfPCell proo = new PdfPCell(new Phrase(res.getString(2),f2)); //NOMBRE PRODUCTO
+                        if (id_v%2==0) {
+                            proo.setBackgroundColor(tab1);
+                        } else {
+                            proo.setBackgroundColor(tab2);
+                        }
+                        proo.setHorizontalAlignment(Element.ALIGN_LEFT);
+                        proo.setBorderWidth(0);
+                        tabla_pagos.addCell(proo);
+                        
+                        PdfPCell cat = new PdfPCell(new Phrase(res.getString(3),f2)); //CATEGORIA
+                        if (id_v%2==0) {
+                            cat.setBackgroundColor(tab1);
+                        } else {
+                            cat.setBackgroundColor(tab2);
+                        }
+                        cat.setHorizontalAlignment(Element.ALIGN_LEFT);
+                        cat.setBorderWidth(0);
+                        tabla_pagos.addCell(cat);
+                        
+                        PdfPCell cant = new PdfPCell(new Phrase(res.getString(4),f2)); //CANTIDAD
+                        if (id_v%2==0) {
+                            cant.setBackgroundColor(tab1);
+                        } else {
+                            cant.setBackgroundColor(tab2);
+                        }
+                        cant.setHorizontalAlignment(Element.ALIGN_LEFT);
+                        cant.setBorderWidth(0);
+                        tabla_pagos.addCell(cant);
+                        
+                        PdfPCell prr = new PdfPCell(new Phrase("$ "+res.getString(5),f2)); //PRECIO
+                        if (id_v%2==0) {
+                            prr.setBackgroundColor(tab1);
+                        } else {
+                            prr.setBackgroundColor(tab2);
+                        }
+                        prr.setHorizontalAlignment(Element.ALIGN_LEFT);
+                        prr.setBorderWidth(0);
+                        tabla_pagos.addCell(prr);
+                    } while (res.next());
+                }
+       
+            } catch (SQLException e) {
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/pdf.png"));
+                JOptionPane.showMessageDialog(null, "Error generando PDF ", "Error PDF", JOptionPane.PLAIN_MESSAGE, iconoo);
+            }
+            
+            //Suma Cerveza
+            String sql21 = "SELECT sum(total) FROM ventas where "+cerveza+" ORDER BY idventa;";
+            String ven ="";
+            try {
+                Statement st = con.createStatement();
+                ResultSet res = st.executeQuery(sql21);
                 while(res.next()) {
                     ven = res.getString(1);
                 }          
             } catch (NumberFormatException | SQLException e) {
                 Icon iconoo = new ImageIcon(getClass().getResource("/img/error_print"));
-                JOptionPane.showMessageDialog(null, "Error al obtener suma total ventas en la impresion "+e, "Error suma impresion", JOptionPane.PLAIN_MESSAGE, iconoo);
+                JOptionPane.showMessageDialog(null, "Error al obtener suma total cervezas en la impresion "+e, "Error suma impresion", JOptionPane.PLAIN_MESSAGE, iconoo);
+            }
+            
+            //Suma Productos
+            String sql22 = "SELECT sum(total) FROM ventas where "+productos+" ORDER BY idventa;";
+            String proo ="";
+            try {
+                Statement st = con.createStatement();
+                ResultSet res = st.executeQuery(sql22);
+                while(res.next()) {
+                    proo = res.getString(1);
+                }          
+            } catch (NumberFormatException | SQLException e) {
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/error_print"));
+                JOptionPane.showMessageDialog(null, "Error al obtener suma total productos en la impresion "+e, "Error suma impresion", JOptionPane.PLAIN_MESSAGE, iconoo);
+            }
+            
+            //Suma Pagos
+            String sql27 = "SELECT sum(total) FROM ventas where "+pagos+" ORDER BY idventa;";
+            String pag ="";
+            try {
+                Statement st = con.createStatement();
+                ResultSet res = st.executeQuery(sql27);
+                while(res.next()) {
+                    pag = res.getString(1);
+                }          
+            } catch (NumberFormatException | SQLException e) {
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/error_print"));
+                JOptionPane.showMessageDialog(null, "Error al obtener suma total pagos en la impresion "+e, "Error suma impresion", JOptionPane.PLAIN_MESSAGE, iconoo);
+            }
+            
+            //Suma Total
+            String sql29 = "SELECT sum(total) FROM ventas;";
+            String toot ="";
+            try {
+                Statement st = con.createStatement();
+                ResultSet res = st.executeQuery(sql29);
+                while(res.next()) {
+                    toot = res.getString(1);
+                }          
+            } catch (NumberFormatException | SQLException e) {
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/error_print"));
+                JOptionPane.showMessageDialog(null, "Error al obtener suma total en la impresion "+e, "Error suma impresion", JOptionPane.PLAIN_MESSAGE, iconoo);
             }
             
             Paragraph parrafo2 = new Paragraph();
             parrafo2.setAlignment(Paragraph.ALIGN_LEFT);
             parrafo2.setFont(FontFactory.getFont(FontFactory.COURIER_BOLD, 14, Font.NORMAL));
-            parrafo2.add("Total en caja: $ "+ven+"\n\n");
+            parrafo2.add("Total Cerveza: $ "+ven+"\n\n\n");
+            
+            Paragraph parrafo21 = new Paragraph();
+            parrafo21.setAlignment(Paragraph.ALIGN_LEFT);
+            parrafo21.setFont(FontFactory.getFont(FontFactory.COURIER_BOLD, 14, Font.NORMAL));
+            parrafo21.add("Total Productos: $ "+proo+"\n\n\n");
+            
+            Paragraph parrafo23 = new Paragraph();
+            parrafo23.setAlignment(Paragraph.ALIGN_LEFT);
+            parrafo23.setFont(FontFactory.getFont(FontFactory.COURIER_BOLD, 14, Font.NORMAL));
+            parrafo23.add("Total Pagos: $ "+pag+"\n\n\n");
+            
+            Paragraph parrafo25 = new Paragraph();
+            parrafo25.setAlignment(Paragraph.ALIGN_LEFT);
+            parrafo25.setFont(FontFactory.getFont(FontFactory.COURIER_BOLD, 14, Font.NORMAL));
+            parrafo25.add("Venta Total: $ "+toot+"\n\n\n");
+            
             documento.add(parrafo2);
             Paragraph parrafo3 = new Paragraph();
             parrafo3.setAlignment(Paragraph.ALIGN_LEFT);
             parrafo3.setFont(FontFactory.getFont(FontFactory.COURIER_BOLD, 14, Font.NORMAL));
             parrafo3.add("\n\nNota: \n");
-            documento.add(parrafo3);
             Paragraph parrafo4 = new Paragraph();
             parrafo4.setAlignment(Paragraph.ALIGN_LEFT);
             parrafo4.setFont(FontFactory.getFont(FontFactory.COURIER));
             parrafo4.add(texto_nota.getText());
+            
+            documento.add(tabla_Prod);
+            documento.add(parrafo21);
+            documento.add(tabla_pagos);
+            documento.add(parrafo23);
+            documento.add(parrafo25);
+            documento.add(parrafo3);
             documento.add(parrafo4);
             documento.close();
             Icon iconoo = new ImageIcon(getClass().getResource("/img/ok.png"));
@@ -670,10 +883,7 @@ public class sistema extends javax.swing.JFrame {
         } catch (IOException img) {
             JOptionPane.showMessageDialog(null, "Error al cargar imagen "+img.getMessage());
         }
-        
-        
-        
-    }
+}
     
     public void Reset() {
         String sql = "TRUNCATE TABLE ventas;";
@@ -798,7 +1008,7 @@ public class sistema extends javax.swing.JFrame {
         jPanel5 = new javax.swing.JPanel();
         labelfecha = new javax.swing.JLabel();
         jLabel17 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
+        search = new javax.swing.JButton();
         jLabel12 = new javax.swing.JLabel();
         pre = new javax.swing.JLabel();
         cambio = new javax.swing.JLabel();
@@ -1106,6 +1316,9 @@ public class sistema extends javax.swing.JFrame {
         barras.setBorder(null);
         barras.setOpaque(false);
         barras.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                barrasKeyPressed(evt);
+            }
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 barrasKeyTyped(evt);
             }
@@ -1179,15 +1392,15 @@ public class sistema extends javax.swing.JFrame {
 
         Reg_venta.add(jPanel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 0, 370, 80));
 
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/search.png"))); // NOI18N
-        jButton2.setBorderPainted(false);
-        jButton2.setContentAreaFilled(false);
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        search.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/search.png"))); // NOI18N
+        search.setBorderPainted(false);
+        search.setContentAreaFilled(false);
+        search.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                searchActionPerformed(evt);
             }
         });
-        Reg_venta.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 30, 50, 40));
+        Reg_venta.add(search, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 30, 50, 40));
 
         jLabel12.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel12.setForeground(new java.awt.Color(255, 255, 255));
@@ -1601,12 +1814,12 @@ public class sistema extends javax.swing.JFrame {
 
         fecha.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
         fecha.setForeground(new java.awt.Color(255, 255, 255));
-        jPanel9.add(fecha, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 0, 193, 50));
+        jPanel9.add(fecha, new org.netbeans.lib.awtextra.AbsoluteConstraints(520, 0, 193, 50));
 
         jLabel19.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
         jLabel19.setForeground(new java.awt.Color(255, 255, 255));
         jLabel19.setText("Ventas del dia");
-        jPanel9.add(jLabel19, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 160, 50));
+        jPanel9.add(jLabel19, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 0, 160, 50));
 
         cerrar_caja.add(jPanel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 710, -1));
 
@@ -1618,7 +1831,7 @@ public class sistema extends javax.swing.JFrame {
                 jButton3ActionPerformed(evt);
             }
         });
-        cerrar_caja.add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(630, 350, 70, 70));
+        cerrar_caja.add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 340, 70, 70));
 
         jLabel24.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
         jLabel24.setForeground(new java.awt.Color(255, 255, 255));
@@ -1755,9 +1968,9 @@ public class sistema extends javax.swing.JFrame {
         
     }//GEN-LAST:event_AgregarProductoActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void searchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchActionPerformed
         Buscar();
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_searchActionPerformed
 
     private void barrasKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_barrasKeyTyped
         char validar = evt.getKeyChar();
@@ -1803,7 +2016,7 @@ public class sistema extends javax.swing.JFrame {
         String namee = "Reporte_"+getFecha2()+".pdf";
         if (JOptionPane.showConfirmDialog(null, "Está usted seguro de que quiere cerrar caja?")==0 ) {
             Imprimir2(namee);
-            Reset();
+            //Reset();
             texto_nota.setText(null);
         }  
     }//GEN-LAST:event_jButton3ActionPerformed
@@ -1860,15 +2073,21 @@ public class sistema extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_ventaaaMousePressed
 
     private void btn_calcularrMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_calcularrMousePressed
-       if (efectivo.getText()==null) {
+       if (efectivo.getText()==null || precio.getText()==null || cantidad.getText()==null) {
            Icon iconoo = new ImageIcon(getClass().getResource("/img/indavild.png"));
            JOptionPane.showMessageDialog(null, "Campos vacios, por favor llena todos los campos", "Error de calculo", JOptionPane.PLAIN_MESSAGE, iconoo);
-          
-           
        } else {
             Calcular();
        }
     }//GEN-LAST:event_btn_calcularrMousePressed
+
+    private void barrasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_barrasKeyPressed
+        char tecla = evt.getKeyChar();
+        
+        if (tecla==KeyEvent.VK_ENTER) {
+            search.doClick();
+        }
+    }//GEN-LAST:event_barrasKeyPressed
 
     /**
      * @param args the command line arguments
@@ -1940,7 +2159,6 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JTextField efectivo;
     private javax.swing.JLabel fecha;
     private rojerusan.RSFotoCircle foto;
-    private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -2010,6 +2228,7 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JTextField precio;
     private javax.swing.JTextField precio_existente;
     private javax.swing.JComboBox<String> prod;
+    private javax.swing.JButton search;
     private javax.swing.JTextField stock;
     private javax.swing.JTextField stock_existente;
     private javax.swing.JTable tabla_caja;
