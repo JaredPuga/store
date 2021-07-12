@@ -26,6 +26,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import java.util.Date;
 
@@ -47,11 +48,20 @@ import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.sun.glass.events.KeyEvent;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.image.BufferedImage;
         
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Enumeration;
+import javax.imageio.ImageIO;
 import javax.swing.Icon;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.TableColumnModelListener;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 
 
@@ -63,7 +73,7 @@ public class sistema extends javax.swing.JFrame {
     conexionSQL cc = new conexionSQL();
     Connection con = cc.conexion();
     String cerveza,productos,pagos,depo;
-    
+    java.awt.Font f = new java.awt.Font("Berlin Sans FB", Font.NORMAL, 14);
     
     public sistema() {
         initComponents();
@@ -72,7 +82,7 @@ public class sistema extends javax.swing.JFrame {
         this.setIconImage(new ImageIcon(getClass().getResource("/img/icon.png")).getImage());
         
         cerveza="categoria='Mega' OR categoria='Promo' OR categoria='Medias' OR categoria='Six' OR categoria='Familiar' OR categoria='Cuartitas' OR categoria='Doce' OR categoria='Caja' OR categoria='Bote' OR categoria='Latones' OR categoria='710'";
-        productos = "categoria='Bebidas' OR categoria='Botanas' OR categoria='Cigarro'";
+        productos = "categoria='Bebidas' OR categoria='Botanas' OR categoria='Cigarro' OR categoria='Hielo'";
         pagos = "categoria='Deposito Dev' OR categoria='Pago'";
         depo = "categoria='Deposito'";
         
@@ -87,8 +97,10 @@ public class sistema extends javax.swing.JFrame {
         datos_inventarioo.setVisible(false);
         Agregar_prod.setVisible(false);
         cerrar_caja.setVisible(false);
+        
+        
     }
-    
+        
     public void setNombre() {
         
         String n = usuarios.user.getText();
@@ -110,7 +122,10 @@ public class sistema extends javax.swing.JFrame {
            JOptionPane.showMessageDialog(null, "Error al recibir ID "+e, "Error de ID", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
         
-        String SQL3 = "Select nombre,apellido from empleados where idempleados="+b+";";
+        
+        ImageIcon ii = null;
+        InputStream is = null;
+        String SQL3 = "Select nombre,apellido,genero,foto from empleados where idempleados="+b+";";
         try {
             Statement stt = con.createStatement();
             ResultSet rs3 = stt.executeQuery(SQL3);
@@ -118,6 +133,22 @@ public class sistema extends javax.swing.JFrame {
             while (rs3.next()) {
                 nom = rs3.getString(1);
                 ap = rs3.getString(2);
+                if (rs3.getString(3).equals("F")) { //Femenino o Masculino
+                    bienvenido.setText("Bienvenida, ");
+                }
+                is = rs3.getBinaryStream(4);
+                System.out.println(is +"<-- foto");
+                if (is==null && rs3.getString(3).equals("M")) {
+                    Icon def = new ImageIcon(getClass().getResource("/img/us1.png")); //default
+                    foto.setImagenDefault(def);
+                } else if (is==null && rs3.getString(3).equals("F")){
+                    Icon def = new ImageIcon(getClass().getResource("/img/us2.png")); //default
+                    foto.setImagenDefault(def);
+                } else {
+                    BufferedImage bi = ImageIO.read(is);
+                    ii = new ImageIcon(bi);
+                    foto.setImagenDefault(ii);
+                }
             }
             nom = nom.concat(" "+ap);
             name.setText(nom);
@@ -125,6 +156,8 @@ public class sistema extends javax.swing.JFrame {
         } catch (SQLException e) {
             Icon iconoo = new ImageIcon(getClass().getResource("/img/error_ic.png"));
            JOptionPane.showMessageDialog(null, "Error al pasar Nombre "+e, "Error Nombre", JOptionPane.PLAIN_MESSAGE, iconoo);
+        } catch (IOException ex) {
+            Logger.getLogger(sistema.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -137,7 +170,7 @@ public class sistema extends javax.swing.JFrame {
         modelo.addColumn("Categoria");
         modelo.addColumn("Stock");
         
-        tabla_productos.setModel(modelo);
+        tabla_cerv_inv.setModel(modelo);
         
         String sql = "select * from productos order by categoria;";
         
@@ -159,7 +192,7 @@ public class sistema extends javax.swing.JFrame {
                 prod[5] = res.getString(7);
                 modelo.addRow(prod);
             }
-            tabla_productos.setModel(modelo);
+            tabla_cerv_inv.setModel(modelo);
         } catch (SQLException e) {
             Icon iconoo = new ImageIcon(getClass().getResource("/img/error_db.png"));
             JOptionPane.showMessageDialog(null, "Error de Muestra de DB "+e, "Error de muestra", JOptionPane.PLAIN_MESSAGE, iconoo);
@@ -282,14 +315,13 @@ public class sistema extends javax.swing.JFrame {
         
     }
     
-    public void MostrarTablaVentas() {
+    public void MostrarTablaProductos() {
         DefaultTableModel modelo = new DefaultTableModel();
-        modelo.addColumn("Venta No");
+        modelo.addColumn("No");
         modelo.addColumn("Producto");
         modelo.addColumn("Categoria");
         modelo.addColumn("Cantidad");
         modelo.addColumn("Total");
-        
         tabla_prod.setModel(modelo);  
         
         String sql = "SELECT idventa, producto,categoria,cantidad,total FROM ventas WHERE "+productos+" Order by idventa;";
@@ -312,11 +344,60 @@ public class sistema extends javax.swing.JFrame {
             Icon iconoo = new ImageIcon(getClass().getResource("/img/error_db.png"));
             JOptionPane.showMessageDialog(null, "Error de Muestra DB1 "+e, "Error de DB", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
+        tabla_prod.getTableHeader().setFont(f);
+        TableColumnModel columnModel = tabla_prod.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(60);
+        columnModel.getColumn(1).setPreferredWidth(250);
+        columnModel.getColumn(2).setPreferredWidth(150);
+        columnModel.getColumn(3).setPreferredWidth(50);
+        columnModel.getColumn(4).setPreferredWidth(150);
+        
+        tabla_prod.setColumnModel(columnModel);
     }
-
+    
+    public void MostrarTablaProductos_inv() {
+        DefaultTableModel modelo = new DefaultTableModel();
+        modelo.addColumn("No");
+        modelo.addColumn("Codigo de Barras");
+        modelo.addColumn("Producto");
+        modelo.addColumn("Categoria");
+        modelo.addColumn("Stock");
+        tabla_pro_inv.setModel(modelo);  
+        
+        String sql = "SELECT idproductos,codigobarras,nombre_producto,categoria,stock FROM productos WHERE "+productos+" Order by nombre_producto;";
+        String vent[] = new String[5];
+        int i=0;
+        try {
+        Statement st = con.createStatement();
+        ResultSet res = st.executeQuery(sql);
+            while (res.next()) {
+                i++;
+                vent[0] = Integer.toString(i);//idvente
+                vent[1] = res.getString(2);//producto
+                vent[2] = res.getString(3);//categoria
+                vent[3] = res.getString(4);//cantidad
+                vent[4] = res.getString(5)+" pzs"; //total
+                modelo.addRow(vent);
+            }
+            tabla_pro_inv.setModel(modelo);
+        } catch (SQLException e) {
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/error_db.png"));
+            JOptionPane.showMessageDialog(null, "Error de Muestra DB1 "+e, "Error de DB", JOptionPane.PLAIN_MESSAGE, iconoo);
+        }
+        tabla_pro_inv.getTableHeader().setFont(f);
+        TableColumnModel columnModel = tabla_pro_inv.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(60);
+        columnModel.getColumn(1).setPreferredWidth(150);
+        columnModel.getColumn(2).setPreferredWidth(250);
+        columnModel.getColumn(3).setPreferredWidth(50);
+        columnModel.getColumn(4).setPreferredWidth(150);
+        
+        tabla_pro_inv.setColumnModel(columnModel);
+    }
+    
     public void MostrarTablaCerveza() {
         DefaultTableModel modelo = new DefaultTableModel();
-        modelo.addColumn("Venta No");
+        modelo.addColumn("No");
         modelo.addColumn("Producto");
         modelo.addColumn("Categoria");
         modelo.addColumn("Cantidad");
@@ -344,17 +425,68 @@ public class sistema extends javax.swing.JFrame {
             Icon iconoo = new ImageIcon(getClass().getResource("/img/error_db.png"));
             JOptionPane.showMessageDialog(null, "Error de Muestra DB1 "+e, "Error de DB", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
+        
+        tabla_cerv.getTableHeader().setFont(f);
+        TableColumnModel columnModel = tabla_cerv.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(60);
+        columnModel.getColumn(1).setPreferredWidth(250);
+        columnModel.getColumn(2).setPreferredWidth(150);
+        columnModel.getColumn(3).setPreferredWidth(50);
+        columnModel.getColumn(4).setPreferredWidth(150);
+        
+        tabla_cerv.setColumnModel(columnModel);
+    }
+    
+    public void MostrarTablaCerveza_inv() {
+        DefaultTableModel modelo = new DefaultTableModel();
+        modelo.addColumn("No");
+        modelo.addColumn("Codigo de Barras");
+        modelo.addColumn("Producto");
+        modelo.addColumn("Categoria");
+        modelo.addColumn("Stock");
+        
+        tabla_cerv_inv.setModel(modelo);  
+        
+        String sql = "SELECT idproductos,codigobarras,nombre_producto,categoria,stock FROM productos WHERE "+cerveza+" Order by nombre_producto;";
+        String vent[] = new String[5];
+        int i=0;
+        try {
+        Statement st = con.createStatement();
+        ResultSet res = st.executeQuery(sql);
+            while (res.next()) {
+                i++;
+                vent[0] = Integer.toString(i);//idproductos
+                vent[1] = res.getString(2);//codigobarras
+                vent[2] = res.getString(3);//Nombre
+                vent[3] = res.getString(4);//cantegoria
+                vent[4] = res.getString(5)+" pzs"; //stock
+                modelo.addRow(vent);
+            }
+            tabla_cerv_inv.setModel(modelo);
+        } catch (SQLException e) {
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/error_db.png"));
+            JOptionPane.showMessageDialog(null, "Error de Muestra DB1 "+e, "Error de DB", JOptionPane.PLAIN_MESSAGE, iconoo);
+        }
+        tabla_cerv_inv.getTableHeader().setFont(f);
+        TableColumnModel columnModel = tabla_cerv_inv.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(60);
+        columnModel.getColumn(1).setPreferredWidth(150);
+        columnModel.getColumn(2).setPreferredWidth(250);
+        columnModel.getColumn(3).setPreferredWidth(50);
+        columnModel.getColumn(4).setPreferredWidth(150);
+        
+        tabla_cerv_inv.setColumnModel(columnModel);
     }
     
     public void MostrarTablaDepositos() {
         DefaultTableModel modelo = new DefaultTableModel();
-        modelo.addColumn("Venta No");
+        modelo.addColumn("No");
         modelo.addColumn("Categoria");
         modelo.addColumn("Total");
         
         tabla_depositos.setModel(modelo);  
         
-        String sql = "SELECT categoria,total FROM ventas WHERE "+depo+" or "+pagos+" Order by idventa;";
+        String sql = "SELECT producto,total FROM ventas WHERE "+depo+" or "+pagos+" Order by idventa;";
         String vent[] = new String[3];
         int i=0;
         try {
@@ -363,7 +495,7 @@ public class sistema extends javax.swing.JFrame {
             while (res.next()) {
                 i++;
                 vent[0] = Integer.toString(i);//idvente
-                vent[1] = res.getString(1);//categoria
+                vent[1] = res.getString(1);//nombre
                 vent[2] = "$ "+res.getString(2)+" "; //total
                 modelo.addRow(vent);
             }
@@ -372,18 +504,26 @@ public class sistema extends javax.swing.JFrame {
             Icon iconoo = new ImageIcon(getClass().getResource("/img/error_db.png"));
             JOptionPane.showMessageDialog(null, "Error de Muestra DB1 "+e, "Error de DB", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
+        
+        tabla_depositos.getTableHeader().setFont(f);
+        TableColumnModel columnModel = tabla_depositos.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(60);
+        columnModel.getColumn(1).setPreferredWidth(350);
+        columnModel.getColumn(2).setPreferredWidth(150);
+        
+        tabla_depositos.setColumnModel(columnModel);
     }
     
     public String getFecha() {
-        Date fecha = new Date();
+        Date fechaa = new Date();
         SimpleDateFormat fech = new SimpleDateFormat("dd/MM/YYYY");
-        return fech.format(fecha);
+        return fech.format(fechaa);
     }
     
     public String getFecha2() {
-        Date fecha = new Date();
+        Date fechaa = new Date();
         SimpleDateFormat fech = new SimpleDateFormat("dd-MM-YYYY");
-        return fech.format(fecha);
+        return fech.format(fechaa);
         
     }
     
@@ -520,7 +660,7 @@ public class sistema extends javax.swing.JFrame {
         
         tabla_caja.setModel(modelo);
         
-        String sql = "SELECT idventa, producto,categoria,cantidad,total FROM ventas Order by idventa;";
+        String sql = "SELECT idventa, producto,categoria,cantidad,total FROM ventas WHERE "+cerveza+" Order by idventa;";
         
         String vent[] = new String[5];
         
@@ -540,6 +680,70 @@ public class sistema extends javax.swing.JFrame {
             Icon iconoo = new ImageIcon(getClass().getResource("/img/error_db.png"));
             JOptionPane.showMessageDialog(null, "Error de muestra db", "Error en db", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
+        
+        tabla_caja.getTableHeader().setFont(f);
+    }
+    
+    public void MostrarTablaProductos2() {
+        DefaultTableModel modelo = new DefaultTableModel();
+        modelo.addColumn("Venta No");
+        modelo.addColumn("Producto");
+        modelo.addColumn("Categoria");
+        modelo.addColumn("Cantidad");
+        modelo.addColumn("Total");
+        tabla_prod_caja.setModel(modelo);  
+        
+        String sql = "SELECT idventa, producto,categoria,cantidad,total FROM ventas WHERE "+productos+" Order by idventa;";
+        String vent[] = new String[5];
+        int i=0;
+        try {
+        Statement st = con.createStatement();
+        ResultSet res = st.executeQuery(sql);
+            while (res.next()) {
+                i++;
+                vent[0] = Integer.toString(i);//idvente
+                vent[1] = res.getString(2);//producto
+                vent[2] = res.getString(3);//categoria
+                vent[3] = res.getString(4);//cantidad
+                vent[4] = "$ "+res.getString(5)+" "; //total
+                modelo.addRow(vent);
+            }
+            tabla_prod_caja.setModel(modelo);
+        } catch (SQLException e) {
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/error_db.png"));
+            JOptionPane.showMessageDialog(null, "Error de Muestra DB1 "+e, "Error de DB", JOptionPane.PLAIN_MESSAGE, iconoo);
+        }
+        tabla_prod_caja.getTableHeader().setFont(f);
+    }
+    
+    public void MostrarTablaDepositos2() {
+        DefaultTableModel modelo = new DefaultTableModel();
+        modelo.addColumn("Venta No");
+        modelo.addColumn("Categoria");
+        modelo.addColumn("Total");
+        
+        tabla_dep_caja.setModel(modelo);  
+        
+        String sql = "SELECT categoria,total FROM ventas WHERE "+depo+" or "+pagos+" Order by idventa;";
+        String vent[] = new String[3];
+        int i=0;
+        try {
+        Statement st = con.createStatement();
+        ResultSet res = st.executeQuery(sql);
+            while (res.next()) {
+                i++;
+                vent[0] = Integer.toString(i);//idvente
+                vent[1] = res.getString(1);//categoria
+                vent[2] = "$ "+res.getString(2)+" "; //total
+                modelo.addRow(vent);
+            }
+            tabla_dep_caja.setModel(modelo);
+        } catch (SQLException e) {
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/error_db.png"));
+            JOptionPane.showMessageDialog(null, "Error de Muestra DB1 "+e, "Error de DB", JOptionPane.PLAIN_MESSAGE, iconoo);
+        }
+        
+        tabla_dep_caja.getTableHeader().setFont(f);
     }
     
     public void ImprimirCaja(JPanel pnl) {
@@ -575,6 +779,57 @@ public class sistema extends javax.swing.JFrame {
         }
     }
     
+    public String SumaCerveza() {
+        //Suma Cerveza
+            String sql21 = "SELECT sum(total) FROM ventas where "+cerveza+" ORDER BY idventa;";
+            String ven ="";
+            try {
+                Statement st = con.createStatement();
+                ResultSet res = st.executeQuery(sql21);
+                while(res.next()) {
+                    ven = res.getString(1);
+                }          
+            } catch (NumberFormatException | SQLException e) {
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/error_print"));
+                JOptionPane.showMessageDialog(null, "Error al obtener suma total cervezas en la impresion "+e, "Error suma impresion", JOptionPane.PLAIN_MESSAGE, iconoo);
+            }
+            return ven;
+    }
+    
+    public String SumaProductos() {
+        //Suma Productos
+            String sql22 = "SELECT sum(total) FROM ventas where "+productos+" ORDER BY idventa;";
+            String proo ="";
+            try {
+                Statement st = con.createStatement();
+                ResultSet res = st.executeQuery(sql22);
+                while(res.next()) {
+                    proo = res.getString(1);
+                }          
+            } catch (NumberFormatException | SQLException e) {
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/error_print"));
+                JOptionPane.showMessageDialog(null, "Error al obtener suma total productos en la impresion "+e, "Error suma impresion", JOptionPane.PLAIN_MESSAGE, iconoo);
+            }
+        return proo;
+    }
+    
+    public String SumaPagosYDep() {
+        //Suma Pagos
+        String sql27 = "SELECT sum(total) FROM ventas where "+pagos+" OR "+depo+" ORDER BY idventa;";
+        String pag ="";
+        try {
+            Statement st = con.createStatement();
+            ResultSet res = st.executeQuery(sql27);
+            while(res.next()) {
+                pag = res.getString(1);
+            }          
+        } catch (NumberFormatException | SQLException e) {
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/error_print"));
+            JOptionPane.showMessageDialog(null, "Error al obtener suma total pagos en la impresion "+e, "Error suma impresion", JOptionPane.PLAIN_MESSAGE, iconoo);
+        }
+        return pag;
+    }
+    
     public void Imprimir2(String name) {
         Document documento = new Document();
         
@@ -604,8 +859,8 @@ public class sistema extends javax.swing.JFrame {
             tabla_pagos.setWidthPercentage(100);
             tabla_dep.setWidthPercentage(100);
             
-            Font f = FontFactory.getFont(FontFactory.COURIER);
-            f.setColor(BaseColor.WHITE);
+            Font fff = FontFactory.getFont(FontFactory.COURIER);
+            fff.setColor(BaseColor.WHITE);
             Font f2 = FontFactory.getFont(FontFactory.COURIER);
             f2.setColor(BaseColor.WHITE);
             
@@ -614,7 +869,7 @@ public class sistema extends javax.swing.JFrame {
             BaseColor tab1 = new BaseColor(97,106,107);
             BaseColor tab2 = new BaseColor(66,73,73);
             
-            PdfPCell venta = new PdfPCell(new Phrase("Venta no",f));
+            PdfPCell venta = new PdfPCell(new Phrase("Venta no",fff));
             venta.setBackgroundColor(head);
             venta.setHorizontalAlignment(Element.ALIGN_CENTER);
             venta.setVerticalAlignment(Element.ALIGN_CENTER);
@@ -622,7 +877,7 @@ public class sistema extends javax.swing.JFrame {
             venta.setPaddingTop(15);
             venta.setBorderWidth(0);
             
-            PdfPCell producto = new PdfPCell(new Phrase("Producto",f));
+            PdfPCell producto = new PdfPCell(new Phrase("Producto",fff));
             producto.setBackgroundColor(head);
             producto.setHorizontalAlignment(Element.ALIGN_LEFT);
             producto.setVerticalAlignment(Element.ALIGN_CENTER);
@@ -630,7 +885,7 @@ public class sistema extends javax.swing.JFrame {
             producto.setPaddingTop(15);
             producto.setBorderWidth(0);
             
-            PdfPCell categoriaa = new PdfPCell(new Phrase("Categoria",f));
+            PdfPCell categoriaa = new PdfPCell(new Phrase("Categoria",fff));
             categoriaa.setBackgroundColor(head);
             categoriaa.setHorizontalAlignment(Element.ALIGN_LEFT);
             categoriaa.setVerticalAlignment(Element.ALIGN_CENTER);
@@ -638,7 +893,7 @@ public class sistema extends javax.swing.JFrame {
             categoriaa.setPaddingTop(15);
             categoriaa.setBorderWidth(0);
             
-            PdfPCell cantidadd = new PdfPCell(new Phrase("Cantidad",f));
+            PdfPCell cantidadd = new PdfPCell(new Phrase("Cantidad",fff));
             cantidadd.setBackgroundColor(head);
             cantidadd.setHorizontalAlignment(Element.ALIGN_LEFT);
             cantidadd.setVerticalAlignment(Element.ALIGN_CENTER);
@@ -646,7 +901,7 @@ public class sistema extends javax.swing.JFrame {
             cantidadd.setPaddingTop(15);
             cantidadd.setBorderWidth(0);
             
-            PdfPCell total = new PdfPCell(new Phrase("Total",f));
+            PdfPCell total = new PdfPCell(new Phrase("Total",fff));
             total.setBackgroundColor(head);
             total.setHorizontalAlignment(Element.ALIGN_LEFT);
             total.setVerticalAlignment(Element.ALIGN_CENTER);
@@ -956,34 +1211,8 @@ public class sistema extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "Error generando PDF ", "Error PDF", JOptionPane.PLAIN_MESSAGE, iconoo);
             }
             
-            //Suma Cerveza
-            String sql21 = "SELECT sum(total) FROM ventas where "+cerveza+" ORDER BY idventa;";
-            String ven ="";
-            try {
-                Statement st = con.createStatement();
-                ResultSet res = st.executeQuery(sql21);
-                while(res.next()) {
-                    ven = res.getString(1);
-                }          
-            } catch (NumberFormatException | SQLException e) {
-                Icon iconoo = new ImageIcon(getClass().getResource("/img/error_print"));
-                JOptionPane.showMessageDialog(null, "Error al obtener suma total cervezas en la impresion "+e, "Error suma impresion", JOptionPane.PLAIN_MESSAGE, iconoo);
-            }
-            
-            //Suma Productos
-            String sql22 = "SELECT sum(total) FROM ventas where "+productos+" ORDER BY idventa;";
-            String proo ="";
-            try {
-                Statement st = con.createStatement();
-                ResultSet res = st.executeQuery(sql22);
-                while(res.next()) {
-                    proo = res.getString(1);
-                }          
-            } catch (NumberFormatException | SQLException e) {
-                Icon iconoo = new ImageIcon(getClass().getResource("/img/error_print"));
-                JOptionPane.showMessageDialog(null, "Error al obtener suma total productos en la impresion "+e, "Error suma impresion", JOptionPane.PLAIN_MESSAGE, iconoo);
-            }
-            
+            String ven =SumaCerveza();
+            String proo = SumaProductos();            
             //Suma Pagos
             String sql27 = "SELECT sum(total) FROM ventas where "+pagos+" ORDER BY idventa;";
             String pag ="";
@@ -1000,12 +1229,12 @@ public class sistema extends javax.swing.JFrame {
             
             //Suma Depositos
             String sql28 = "SELECT sum(total) FROM ventas where "+depo+" ORDER BY idventa;";
-            String dep ="";
+            String depp ="";
             try {
                 Statement st = con.createStatement();
                 ResultSet res = st.executeQuery(sql28);
                 while(res.next()) {
-                    dep = res.getString(1);
+                    depp = res.getString(1);
                 }          
             } catch (NumberFormatException | SQLException e) {
                 Icon iconoo = new ImageIcon(getClass().getResource("/img/error_print"));
@@ -1044,21 +1273,21 @@ public class sistema extends javax.swing.JFrame {
             Paragraph parrafo24 = new Paragraph();
             parrafo24.setAlignment(Paragraph.ALIGN_LEFT);
             parrafo24.setFont(FontFactory.getFont(FontFactory.COURIER_BOLD, 14, Font.NORMAL));
-            parrafo24.add("Total Depositos: $ "+dep+"\n\n\n");
-            
+            parrafo24.add("Total Depositos: $ "+depp+"\n\n\n");
+
             Paragraph parrafo25 = new Paragraph();
             parrafo25.setAlignment(Paragraph.ALIGN_LEFT);
-            parrafo25.setFont(FontFactory.getFont(FontFactory.COURIER_BOLD, 14, Font.NORMAL));
-            parrafo25.add("Venta Total: $ "+toot+"\n\n\n");
+            parrafo25.setFont(FontFactory.getFont(FontFactory.COURIER_BOLD, 18, Font.UNDERLINE));
+            parrafo25.add("Venta Total: $ "+toot);
             
             documento.add(parrafo2);
             Paragraph parrafo3 = new Paragraph();
             parrafo3.setAlignment(Paragraph.ALIGN_LEFT);
             parrafo3.setFont(FontFactory.getFont(FontFactory.COURIER_BOLD, 14, Font.NORMAL));
-            parrafo3.add("\n\nNota: \n");
+            parrafo3.add("\n\n\nNota: \n");
             Paragraph parrafo4 = new Paragraph();
             parrafo4.setAlignment(Paragraph.ALIGN_LEFT);
-            parrafo4.setFont(FontFactory.getFont(FontFactory.COURIER));
+            parrafo4.setFont(FontFactory.getFont(FontFactory.COURIER, 17, Font.NORMAL));
             parrafo4.add(texto_nota.getText());
             
             documento.add(tabla_Prod);
@@ -1179,7 +1408,7 @@ public class sistema extends javax.swing.JFrame {
             tabla.addCell(stkk);
             
             //TABLA INVENTARIO
-            String sql="SELECT * FROM productos;";
+            String sql="SELECT * FROM productos WHERE "+cerveza+";";
             try {
                 Statement st = con.createStatement();
                 ResultSet res = st.executeQuery(sql);
@@ -1327,7 +1556,6 @@ public class sistema extends javax.swing.JFrame {
     }
     
     public void AgregarExistente() {
-        
         String codigbarras=barras_existente.getText();
         String stockk = stock_existente.getText();
         String sql = "update productos set stock="+stockk+" where codigobarras="+codigbarras+";"; //Se actualiza el stock
@@ -1488,10 +1716,18 @@ public class sistema extends javax.swing.JFrame {
         name = new javax.swing.JLabel();
         bienvenido = new javax.swing.JLabel();
         foto = new rojerusan.RSFotoCircle();
+        jLabel35 = new javax.swing.JLabel();
         datos_inventarioo = new javax.swing.JPanel();
         datos_inventario = new javax.swing.JScrollPane();
-        tabla_productos = new javax.swing.JTable();
+        tabla_cerv_inv = new javax.swing.JTable();
         jButton4 = new javax.swing.JButton();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        tabla_pro_inv = new javax.swing.JTable();
+        jPanel6 = new javax.swing.JPanel();
+        jLabel41 = new javax.swing.JLabel();
+        jLabel42 = new javax.swing.JLabel();
+        jLabel36 = new javax.swing.JLabel();
+        jLabel40 = new javax.swing.JLabel();
         Reg_venta = new javax.swing.JPanel();
         barras = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
@@ -1515,7 +1751,6 @@ public class sistema extends javax.swing.JFrame {
         jLabel20 = new javax.swing.JLabel();
         jSeparator9 = new javax.swing.JSeparator();
         caja2 = new javax.swing.JLabel();
-        jLabel36 = new javax.swing.JLabel();
         jLabel38 = new javax.swing.JLabel();
         btn_ventaaa = new javax.swing.JPanel();
         btn_ventaa = new javax.swing.JLabel();
@@ -1571,14 +1806,27 @@ public class sistema extends javax.swing.JFrame {
         cerrar_caja = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         tabla_caja = new javax.swing.JTable();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        tabla_prod_caja = new javax.swing.JTable();
+        jScrollPane8 = new javax.swing.JScrollPane();
+        tabla_dep_caja = new javax.swing.JTable();
         jPanel9 = new javax.swing.JPanel();
-        fecha = new javax.swing.JLabel();
-        jLabel19 = new javax.swing.JLabel();
         jButton3 = new javax.swing.JButton();
         jLabel24 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         texto_nota = new javax.swing.JTextArea();
         jButton5 = new javax.swing.JButton();
+        fecha = new javax.swing.JLabel();
+        jLabel19 = new javax.swing.JLabel();
+        jLabel43 = new javax.swing.JLabel();
+        jLabel44 = new javax.swing.JLabel();
+        cvz = new javax.swing.JLabel();
+        prd = new javax.swing.JLabel();
+        jLabel47 = new javax.swing.JLabel();
+        jLabel48 = new javax.swing.JLabel();
+        dep = new javax.swing.JLabel();
+        jLabel50 = new javax.swing.JLabel();
+        jLabel51 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
 
@@ -1749,8 +1997,8 @@ public class sistema extends javax.swing.JFrame {
 
         jPanel3.add(b5, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 320, 150, 50));
 
-        jLabel37.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/m5.png"))); // NOI18N
-        jPanel3.add(jLabel37, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 20, 110, 100));
+        jLabel37.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/vaso.png"))); // NOI18N
+        jPanel3.add(jLabel37, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 20, 100, 100));
 
         jPanel1.add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 150, 620));
 
@@ -1767,20 +2015,23 @@ public class sistema extends javax.swing.JFrame {
         jPanel4.add(bienvenido, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 40, -1, 50));
 
         foto.setImagenDefault(new javax.swing.ImageIcon(getClass().getResource("/img/icons8_user_120px.png"))); // NOI18N
-        jPanel4.add(foto, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 20, 100, 100));
+        jPanel4.add(foto, new org.netbeans.lib.awtextra.AbsoluteConstraints(535, 20, 100, 100));
 
-        jPanel1.add(jPanel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 0, 800, 140));
+        jLabel35.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/modelorama.png"))); // NOI18N
+        jPanel4.add(jLabel35, new org.netbeans.lib.awtextra.AbsoluteConstraints(700, 0, 240, 140));
+
+        jPanel1.add(jPanel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 0, 1000, 140));
 
         datos_inventarioo.setBackground(new java.awt.Color(35, 76, 119));
         datos_inventarioo.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        tabla_productos = new javax.swing.JTable() {
+        tabla_cerv_inv = new javax.swing.JTable() {
             public boolean isCellEditable(int rowIndex, int colIndex) {
                 return false;
             }
         };
-        tabla_productos.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
-        tabla_productos.setModel(new javax.swing.table.DefaultTableModel(
+        tabla_cerv_inv.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        tabla_cerv_inv.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -1788,14 +2039,13 @@ public class sistema extends javax.swing.JFrame {
 
             }
         ));
-        tabla_productos.setFocusable(false);
-        tabla_productos.setRowHeight(19);
-        tabla_productos.setShowHorizontalLines(false);
-        tabla_productos.getTableHeader().setResizingAllowed(false);
-        tabla_productos.getTableHeader().setReorderingAllowed(false);
-        datos_inventario.setViewportView(tabla_productos);
+        tabla_cerv_inv.setRowHeight(19);
+        tabla_cerv_inv.setShowHorizontalLines(false);
+        tabla_cerv_inv.getTableHeader().setResizingAllowed(false);
+        tabla_cerv_inv.getTableHeader().setReorderingAllowed(false);
+        datos_inventario.setViewportView(tabla_cerv_inv);
 
-        datos_inventarioo.add(datos_inventario, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 960, 420));
+        datos_inventarioo.add(datos_inventario, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 100, 540, 320));
 
         jButton4.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
         jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/print.png"))); // NOI18N
@@ -1805,9 +2055,56 @@ public class sistema extends javax.swing.JFrame {
                 jButton4ActionPerformed(evt);
             }
         });
-        datos_inventarioo.add(jButton4, new org.netbeans.lib.awtextra.AbsoluteConstraints(890, 420, 70, 60));
+        datos_inventarioo.add(jButton4, new org.netbeans.lib.awtextra.AbsoluteConstraints(1030, 420, 70, 60));
 
-        jPanel1.add(datos_inventarioo, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 960, 480));
+        tabla_pro_inv = new javax.swing.JTable() {
+            public boolean isCellEditable(int rowIndex, int colIndex) {
+                return false;
+            }
+        };
+        tabla_pro_inv.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        tabla_pro_inv.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {},
+                {},
+                {},
+                {}
+            },
+            new String [] {
+
+            }
+        ));
+        tabla_pro_inv.setRowHeight(20);
+        tabla_pro_inv.getTableHeader().setResizingAllowed(false);
+        tabla_pro_inv.getTableHeader().setReorderingAllowed(false);
+        jScrollPane6.setViewportView(tabla_pro_inv);
+
+        datos_inventarioo.add(jScrollPane6, new org.netbeans.lib.awtextra.AbsoluteConstraints(560, 100, 540, 320));
+
+        jPanel6.setBackground(new java.awt.Color(24, 33, 46));
+        jPanel6.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        jLabel41.setFont(new java.awt.Font("Berlin Sans FB", 0, 36)); // NOI18N
+        jLabel41.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel41.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel41.setText("PRODUCTOS");
+        jPanel6.add(jLabel41, new org.netbeans.lib.awtextra.AbsoluteConstraints(560, 0, 540, 100));
+
+        jLabel42.setFont(new java.awt.Font("Berlin Sans FB", 0, 36)); // NOI18N
+        jLabel42.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel42.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel42.setText("CERVEZA");
+        jPanel6.add(jLabel42, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 540, 100));
+
+        jLabel36.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/cerv1.png"))); // NOI18N
+        jPanel6.add(jLabel36, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 5, 80, 90));
+
+        jLabel40.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/prod1.png"))); // NOI18N
+        jPanel6.add(jLabel40, new org.netbeans.lib.awtextra.AbsoluteConstraints(640, 5, -1, 90));
+
+        datos_inventarioo.add(jPanel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1100, 100));
+
+        jPanel1.add(datos_inventarioo, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 1100, 480));
 
         Reg_venta.setBackground(new java.awt.Color(35, 76, 119));
         Reg_venta.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -1825,7 +2122,7 @@ public class sistema extends javax.swing.JFrame {
                 barrasKeyTyped(evt);
             }
         });
-        Reg_venta.add(barras, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 20, 150, 20));
+        Reg_venta.add(barras, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 20, 170, 20));
 
         jLabel7.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel7.setForeground(new java.awt.Color(255, 255, 255));
@@ -1837,7 +2134,7 @@ public class sistema extends javax.swing.JFrame {
                 prodActionPerformed(evt);
             }
         });
-        Reg_venta.add(prod, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 70, 190, -1));
+        Reg_venta.add(prod, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 70, 210, -1));
 
         jLabel8.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel8.setForeground(new java.awt.Color(255, 255, 255));
@@ -1877,13 +2174,14 @@ public class sistema extends javax.swing.JFrame {
 
             }
         ));
+        tabla_cerv.setGridColor(new java.awt.Color(187, 223, 215));
         tabla_cerv.setRowHeight(20);
         tabla_cerv.setShowHorizontalLines(false);
         tabla_cerv.getTableHeader().setResizingAllowed(false);
         tabla_cerv.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(tabla_cerv);
 
-        Reg_venta.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 50, 330, 430));
+        Reg_venta.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 50, 390, 430));
 
         jScrollPane4.setFont(new java.awt.Font("Berlin Sans FB", 0, 14)); // NOI18N
 
@@ -1911,7 +2209,7 @@ public class sistema extends javax.swing.JFrame {
         tabla_prod.getTableHeader().setReorderingAllowed(false);
         jScrollPane4.setViewportView(tabla_prod);
 
-        Reg_venta.add(jScrollPane4, new org.netbeans.lib.awtextra.AbsoluteConstraints(630, 50, 330, 430));
+        Reg_venta.add(jScrollPane4, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 50, 390, 430));
 
         tabla_depositos = new javax.swing.JTable() {
             public boolean isCellEditable(int rowIndex, int colIndex) {
@@ -1936,7 +2234,7 @@ public class sistema extends javax.swing.JFrame {
         tabla_depositos.getTableHeader().setReorderingAllowed(false);
         jScrollPane5.setViewportView(tabla_depositos);
 
-        Reg_venta.add(jScrollPane5, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 310, 280, 170));
+        Reg_venta.add(jScrollPane5, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 310, 300, 170));
 
         jPanel5.setBackground(new java.awt.Color(24, 33, 46));
         jPanel5.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -1945,15 +2243,15 @@ public class sistema extends javax.swing.JFrame {
         jLabel21.setForeground(new java.awt.Color(255, 255, 255));
         jLabel21.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel21.setText("Cerveza");
-        jPanel5.add(jLabel21, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 330, 50));
+        jPanel5.add(jLabel21, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 390, 50));
 
         jLabel22.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
         jLabel22.setForeground(new java.awt.Color(255, 255, 255));
         jLabel22.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel22.setText("Productos");
-        jPanel5.add(jLabel22, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 0, 330, 50));
+        jPanel5.add(jLabel22, new org.netbeans.lib.awtextra.AbsoluteConstraints(400, 0, 390, 50));
 
-        Reg_venta.add(jPanel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 0, 670, 50));
+        Reg_venta.add(jPanel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 0, 790, 50));
 
         search.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/search.png"))); // NOI18N
         search.setBorderPainted(false);
@@ -1963,7 +2261,7 @@ public class sistema extends javax.swing.JFrame {
                 searchActionPerformed(evt);
             }
         });
-        Reg_venta.add(search, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 10, 50, 40));
+        Reg_venta.add(search, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 10, 50, 40));
 
         jLabel12.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel12.setForeground(new java.awt.Color(255, 255, 255));
@@ -1973,7 +2271,7 @@ public class sistema extends javax.swing.JFrame {
         pre.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         pre.setForeground(new java.awt.Color(255, 255, 255));
         Reg_venta.add(pre, new org.netbeans.lib.awtextra.AbsoluteConstraints(103, 150, 50, 20));
-        Reg_venta.add(jSeparator7, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 40, 150, 10));
+        Reg_venta.add(jSeparator7, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 40, 170, 10));
 
         jLabel18.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel18.setForeground(new java.awt.Color(255, 255, 255));
@@ -1991,9 +2289,6 @@ public class sistema extends javax.swing.JFrame {
         caja2.setForeground(new java.awt.Color(255, 255, 255));
         caja2.setText("0");
         Reg_venta.add(caja2, new org.netbeans.lib.awtextra.AbsoluteConstraints(103, 182, 60, 30));
-
-        jLabel36.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/sell.png"))); // NOI18N
-        Reg_venta.add(jLabel36, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 210, 40, 50));
 
         jLabel38.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel38.setForeground(new java.awt.Color(255, 255, 255));
@@ -2037,7 +2332,7 @@ public class sistema extends javax.swing.JFrame {
                 .addComponent(btn_ventaa, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
-        Reg_venta.add(btn_ventaaa, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 220, 120, 30));
+        Reg_venta.add(btn_ventaaa, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 190, 120, 30));
 
         jPanel2.setBackground(new java.awt.Color(24, 33, 46));
 
@@ -2050,9 +2345,7 @@ public class sistema extends javax.swing.JFrame {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(jLabel17, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2061,14 +2354,14 @@ public class sistema extends javax.swing.JFrame {
                 .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
-        Reg_venta.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 260, 280, 50));
+        Reg_venta.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 260, 300, 50));
 
         jLabel39.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel39.setForeground(new java.awt.Color(255, 255, 255));
         jLabel39.setText("$");
         Reg_venta.add(jLabel39, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 150, -1, -1));
 
-        jPanel1.add(Reg_venta, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 960, 480));
+        jPanel1.add(Reg_venta, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 1100, 480));
 
         Agregar_prod.setBackground(new java.awt.Color(68, 132, 206));
         Agregar_prod.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -2076,21 +2369,21 @@ public class sistema extends javax.swing.JFrame {
         jLabel9.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel9.setForeground(new java.awt.Color(255, 255, 255));
         jLabel9.setText("Categoría");
-        Agregar_prod.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(620, 290, 90, -1));
+        Agregar_prod.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(720, 290, 90, -1));
 
         nombre.setBackground(new java.awt.Color(68, 132, 206));
         nombre.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         nombre.setForeground(new java.awt.Color(255, 255, 255));
         nombre.setBorder(null);
         nombre.setOpaque(false);
-        Agregar_prod.add(nombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 130, 160, 20));
-        Agregar_prod.add(jSeparator1, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 150, 160, 20));
+        Agregar_prod.add(nombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 130, 160, 20));
+        Agregar_prod.add(jSeparator1, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 150, 160, 20));
 
         jLabel10.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel10.setForeground(new java.awt.Color(255, 255, 255));
         jLabel10.setText("Nombre del producto ");
         Agregar_prod.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 140, 170, -1));
-        Agregar_prod.add(jSeparator2, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 190, 160, 10));
+        Agregar_prod.add(jSeparator2, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 190, 160, 10));
 
         contenido.setBackground(new java.awt.Color(68, 132, 206));
         contenido.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
@@ -2102,8 +2395,8 @@ public class sistema extends javax.swing.JFrame {
                 contenidoKeyTyped(evt);
             }
         });
-        Agregar_prod.add(contenido, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 210, 110, 20));
-        Agregar_prod.add(jSeparator3, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 270, 160, 20));
+        Agregar_prod.add(contenido, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 210, 110, 20));
+        Agregar_prod.add(jSeparator3, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 270, 160, 20));
 
         precio.setBackground(new java.awt.Color(68, 132, 206));
         precio.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
@@ -2115,21 +2408,21 @@ public class sistema extends javax.swing.JFrame {
                 precioKeyTyped(evt);
             }
         });
-        Agregar_prod.add(precio, new org.netbeans.lib.awtextra.AbsoluteConstraints(720, 250, 150, 20));
+        Agregar_prod.add(precio, new org.netbeans.lib.awtextra.AbsoluteConstraints(820, 250, 150, 20));
 
         jLabel11.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel11.setForeground(new java.awt.Color(255, 255, 255));
         jLabel11.setText("Codigo de barras");
-        Agregar_prod.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(570, 170, 130, -1));
-        Agregar_prod.add(jSeparator4, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 270, 110, 20));
-        Agregar_prod.add(jSeparator5, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 310, 160, 20));
+        Agregar_prod.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(670, 170, 130, -1));
+        Agregar_prod.add(jSeparator4, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 270, 110, 20));
+        Agregar_prod.add(jSeparator5, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 310, 160, 20));
 
         categoria.setBackground(new java.awt.Color(68, 132, 206));
         categoria.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         categoria.setForeground(new java.awt.Color(255, 255, 255));
         categoria.setBorder(null);
         categoria.setOpaque(false);
-        Agregar_prod.add(categoria, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 290, 160, 20));
+        Agregar_prod.add(categoria, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 290, 160, 20));
 
         if (contenido.getText().equals("1.02") || contenido.getText().equals("2.5")) {
             mlolts.setText("lts");
@@ -2139,20 +2432,20 @@ public class sistema extends javax.swing.JFrame {
         mlolts.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         mlolts.setForeground(new java.awt.Color(255, 255, 255));
         mlolts.setText("ml/lts");
-        Agregar_prod.add(mlolts, new org.netbeans.lib.awtextra.AbsoluteConstraints(830, 210, 40, 20));
+        Agregar_prod.add(mlolts, new org.netbeans.lib.awtextra.AbsoluteConstraints(930, 210, 40, 20));
 
         stock.setBackground(new java.awt.Color(68, 132, 206));
         stock.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         stock.setForeground(new java.awt.Color(255, 255, 255));
         stock.setBorder(null);
         stock.setOpaque(false);
-        Agregar_prod.add(stock, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 330, 160, 20));
-        Agregar_prod.add(jSeparator6, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 350, 160, 20));
+        Agregar_prod.add(stock, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 330, 160, 20));
+        Agregar_prod.add(jSeparator6, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 350, 160, 20));
 
         jLabel13.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel13.setForeground(new java.awt.Color(255, 255, 255));
         jLabel13.setText("Stock");
-        Agregar_prod.add(jLabel13, new org.netbeans.lib.awtextra.AbsoluteConstraints(650, 330, 60, -1));
+        Agregar_prod.add(jLabel13, new org.netbeans.lib.awtextra.AbsoluteConstraints(750, 330, 60, -1));
 
         AgregarProducto.setBackground(new java.awt.Color(241, 159, 77));
         AgregarProducto.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
@@ -2164,39 +2457,39 @@ public class sistema extends javax.swing.JFrame {
                 AgregarProductoActionPerformed(evt);
             }
         });
-        Agregar_prod.add(AgregarProducto, new org.netbeans.lib.awtextra.AbsoluteConstraints(670, 380, 200, 40));
+        Agregar_prod.add(AgregarProducto, new org.netbeans.lib.awtextra.AbsoluteConstraints(770, 380, 200, 40));
 
         jLabel14.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/beer.png"))); // NOI18N
-        Agregar_prod.add(jLabel14, new org.netbeans.lib.awtextra.AbsoluteConstraints(870, 360, 60, 70));
+        Agregar_prod.add(jLabel14, new org.netbeans.lib.awtextra.AbsoluteConstraints(970, 360, 60, 70));
 
         jLabel15.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel15.setForeground(new java.awt.Color(255, 255, 255));
         jLabel15.setText("Precio");
-        Agregar_prod.add(jLabel15, new org.netbeans.lib.awtextra.AbsoluteConstraints(650, 250, 60, -1));
+        Agregar_prod.add(jLabel15, new org.netbeans.lib.awtextra.AbsoluteConstraints(750, 250, 60, -1));
 
         jLabel16.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel16.setForeground(new java.awt.Color(255, 255, 255));
         jLabel16.setText("$");
-        Agregar_prod.add(jLabel16, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 250, 30, -1));
+        Agregar_prod.add(jLabel16, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 250, 30, -1));
 
         jSeparator10.setOrientation(javax.swing.SwingConstants.VERTICAL);
         jSeparator10.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
         jSeparator10.setPreferredSize(new java.awt.Dimension(50, 20));
-        Agregar_prod.add(jSeparator10, new org.netbeans.lib.awtextra.AbsoluteConstraints(480, 0, 30, 480));
+        Agregar_prod.add(jSeparator10, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 0, 30, 480));
 
         jLabel6.setBackground(new java.awt.Color(255, 255, 255));
         jLabel6.setFont(new java.awt.Font("Berlin Sans FB", 0, 36)); // NOI18N
         jLabel6.setForeground(new java.awt.Color(255, 255, 255));
         jLabel6.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel6.setText("Existente");
-        Agregar_prod.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 480, 90));
+        Agregar_prod.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 0, 550, 90));
 
         jLabel23.setBackground(new java.awt.Color(255, 255, 255));
         jLabel23.setFont(new java.awt.Font("Berlin Sans FB", 0, 36)); // NOI18N
         jLabel23.setForeground(new java.awt.Color(255, 255, 255));
         jLabel23.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel23.setText("Nuevo");
-        Agregar_prod.add(jLabel23, new org.netbeans.lib.awtextra.AbsoluteConstraints(480, 0, 480, 90));
+        Agregar_prod.add(jLabel23, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 550, 90));
 
         combx_prod.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2208,28 +2501,28 @@ public class sistema extends javax.swing.JFrame {
         jLabel25.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel25.setForeground(new java.awt.Color(255, 255, 255));
         jLabel25.setText("Nombre del producto ");
-        Agregar_prod.add(jLabel25, new org.netbeans.lib.awtextra.AbsoluteConstraints(540, 130, 170, -1));
+        Agregar_prod.add(jLabel25, new org.netbeans.lib.awtextra.AbsoluteConstraints(640, 130, 170, -1));
 
         jLabel26.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel26.setForeground(new java.awt.Color(255, 255, 255));
         jLabel26.setText("Contenido");
-        Agregar_prod.add(jLabel26, new org.netbeans.lib.awtextra.AbsoluteConstraints(620, 210, 90, -1));
-        Agregar_prod.add(jSeparator11, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 230, 160, 10));
+        Agregar_prod.add(jLabel26, new org.netbeans.lib.awtextra.AbsoluteConstraints(720, 210, 90, -1));
+        Agregar_prod.add(jSeparator11, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 230, 160, 10));
 
         jLabel27.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel27.setForeground(new java.awt.Color(255, 255, 255));
         jLabel27.setText("Precio");
-        Agregar_prod.add(jLabel27, new org.netbeans.lib.awtextra.AbsoluteConstraints(650, 250, 60, -1));
+        Agregar_prod.add(jLabel27, new org.netbeans.lib.awtextra.AbsoluteConstraints(750, 250, 60, -1));
 
         jLabel28.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel28.setForeground(new java.awt.Color(255, 255, 255));
         jLabel28.setText("Categoría");
-        Agregar_prod.add(jLabel28, new org.netbeans.lib.awtextra.AbsoluteConstraints(620, 290, 90, -1));
+        Agregar_prod.add(jLabel28, new org.netbeans.lib.awtextra.AbsoluteConstraints(720, 290, 90, -1));
 
         jLabel29.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel29.setForeground(new java.awt.Color(255, 255, 255));
         jLabel29.setText("Stock");
-        Agregar_prod.add(jLabel29, new org.netbeans.lib.awtextra.AbsoluteConstraints(650, 330, 60, -1));
+        Agregar_prod.add(jLabel29, new org.netbeans.lib.awtextra.AbsoluteConstraints(750, 330, 60, -1));
 
         jLabel30.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel30.setForeground(new java.awt.Color(255, 255, 255));
@@ -2327,7 +2620,7 @@ public class sistema extends javax.swing.JFrame {
         barras_nuevo.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         barras_nuevo.setForeground(new java.awt.Color(255, 255, 255));
         barras_nuevo.setBorder(null);
-        Agregar_prod.add(barras_nuevo, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 170, 160, -1));
+        Agregar_prod.add(barras_nuevo, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 170, 160, -1));
 
         search1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/search.png"))); // NOI18N
         search1.setBorderPainted(false);
@@ -2339,9 +2632,9 @@ public class sistema extends javax.swing.JFrame {
         });
         Agregar_prod.add(search1, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 170, 50, 40));
 
-        jPanel1.add(Agregar_prod, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 960, 480));
+        jPanel1.add(Agregar_prod, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 1100, 480));
 
-        cerrar_caja.setBackground(new java.awt.Color(10, 34, 64));
+        cerrar_caja.setBackground(new java.awt.Color(35, 76, 119));
         cerrar_caja.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jScrollPane3.setBorder(null);
@@ -2352,7 +2645,7 @@ public class sistema extends javax.swing.JFrame {
             }
         };
         tabla_caja.getTableHeader().setReorderingAllowed(false);
-        tabla_caja.setFont(new java.awt.Font("Berlin Sans FB", 0, 21)); // NOI18N
+        tabla_caja.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         tabla_caja.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {},
@@ -2370,20 +2663,60 @@ public class sistema extends javax.swing.JFrame {
         tabla_caja.getTableHeader().setReorderingAllowed(false);
         jScrollPane3.setViewportView(tabla_caja);
 
-        cerrar_caja.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 50, 960, 310));
+        cerrar_caja.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 50, 450, 310));
+
+        tabla_prod_caja = new javax.swing.JTable() {
+            public boolean isCellEditable(int rowIndex, int colIndex) {
+                return false;
+            }
+        };
+        tabla_prod_caja.getTableHeader().setReorderingAllowed(false);
+        tabla_prod_caja.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        tabla_prod_caja.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {},
+                {},
+                {},
+                {}
+            },
+            new String [] {
+
+            }
+        ));
+        tabla_prod_caja.setRowHeight(20);
+        tabla_prod_caja.getTableHeader().setResizingAllowed(false);
+        tabla_prod_caja.getTableHeader().setReorderingAllowed(false);
+        jScrollPane7.setViewportView(tabla_prod_caja);
+
+        cerrar_caja.add(jScrollPane7, new org.netbeans.lib.awtextra.AbsoluteConstraints(460, 50, 420, 310));
+
+        tabla_dep_caja = new javax.swing.JTable() {
+            public boolean isCellEditable(int rowIndex, int colIndex) {
+                return false;
+            }
+        };
+        tabla_dep_caja.getTableHeader().setReorderingAllowed(false);
+        tabla_dep_caja.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
+        tabla_dep_caja.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {},
+                {},
+                {},
+                {}
+            },
+            new String [] {
+
+            }
+        ));
+        tabla_dep_caja.setRowHeight(20);
+        tabla_dep_caja.getTableHeader().setResizingAllowed(false);
+        tabla_dep_caja.getTableHeader().setReorderingAllowed(false);
+        jScrollPane8.setViewportView(tabla_dep_caja);
+
+        cerrar_caja.add(jScrollPane8, new org.netbeans.lib.awtextra.AbsoluteConstraints(890, 50, 210, 310));
 
         jPanel9.setBackground(new java.awt.Color(10, 34, 64));
         jPanel9.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-
-        fecha.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
-        fecha.setForeground(new java.awt.Color(255, 255, 255));
-        jPanel9.add(fecha, new org.netbeans.lib.awtextra.AbsoluteConstraints(520, 0, 193, 50));
-
-        jLabel19.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
-        jLabel19.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel19.setText("Ventas del dia");
-        jPanel9.add(jLabel19, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 0, 160, 50));
-
         cerrar_caja.add(jPanel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 710, -1));
 
         jButton3.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
@@ -2394,12 +2727,12 @@ public class sistema extends javax.swing.JFrame {
                 jButton3ActionPerformed(evt);
             }
         });
-        cerrar_caja.add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(890, 420, 70, 60));
+        cerrar_caja.add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(1030, 420, 70, 60));
 
         jLabel24.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
         jLabel24.setForeground(new java.awt.Color(255, 255, 255));
         jLabel24.setText("Nota:");
-        cerrar_caja.add(jLabel24, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 360, -1, -1));
+        cerrar_caja.add(jLabel24, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 400, -1, -1));
 
         jScrollPane2.setFont(new java.awt.Font("Berlin Sans FB", 0, 14)); // NOI18N
 
@@ -2408,7 +2741,7 @@ public class sistema extends javax.swing.JFrame {
         texto_nota.setRows(5);
         jScrollPane2.setViewportView(texto_nota);
 
-        cerrar_caja.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 370, 720, 100));
+        cerrar_caja.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 407, 410, 70));
 
         jButton5.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
         jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/escoba.png"))); // NOI18N
@@ -2418,20 +2751,70 @@ public class sistema extends javax.swing.JFrame {
                 jButton5ActionPerformed(evt);
             }
         });
-        cerrar_caja.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(800, 420, 70, 60));
+        cerrar_caja.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(940, 420, 70, 60));
 
-        jPanel1.add(cerrar_caja, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 960, 480));
+        fecha.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
+        fecha.setForeground(new java.awt.Color(255, 255, 255));
+        cerrar_caja.add(fecha, new org.netbeans.lib.awtextra.AbsoluteConstraints(900, 0, 193, 50));
+
+        jLabel19.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
+        jLabel19.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel19.setText("Ventas del dia");
+        cerrar_caja.add(jLabel19, new org.netbeans.lib.awtextra.AbsoluteConstraints(750, 0, 160, 50));
+
+        jLabel43.setFont(new java.awt.Font("Berlin Sans FB", 0, 20)); // NOI18N
+        jLabel43.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel43.setText("Total Cerveza:");
+        cerrar_caja.add(jLabel43, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 360, 130, 30));
+
+        jLabel44.setFont(new java.awt.Font("Berlin Sans FB", 0, 20)); // NOI18N
+        jLabel44.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel44.setText("$");
+        cerrar_caja.add(jLabel44, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 360, 10, 30));
+
+        cvz.setFont(new java.awt.Font("Berlin Sans FB", 0, 20)); // NOI18N
+        cvz.setForeground(new java.awt.Color(255, 255, 255));
+        cerrar_caja.add(cvz, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 360, 70, 30));
+
+        prd.setFont(new java.awt.Font("Berlin Sans FB", 0, 20)); // NOI18N
+        prd.setForeground(new java.awt.Color(255, 255, 255));
+        cerrar_caja.add(prd, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 360, 70, 30));
+
+        jLabel47.setFont(new java.awt.Font("Berlin Sans FB", 0, 20)); // NOI18N
+        jLabel47.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel47.setText("$");
+        cerrar_caja.add(jLabel47, new org.netbeans.lib.awtextra.AbsoluteConstraints(797, 360, 20, 30));
+
+        jLabel48.setFont(new java.awt.Font("Berlin Sans FB", 0, 20)); // NOI18N
+        jLabel48.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel48.setText("Total Productos:");
+        cerrar_caja.add(jLabel48, new org.netbeans.lib.awtextra.AbsoluteConstraints(657, 360, 140, 30));
+
+        dep.setFont(new java.awt.Font("Berlin Sans FB", 0, 20)); // NOI18N
+        dep.setForeground(new java.awt.Color(255, 255, 255));
+        cerrar_caja.add(dep, new org.netbeans.lib.awtextra.AbsoluteConstraints(1030, 360, 70, 30));
+
+        jLabel50.setFont(new java.awt.Font("Berlin Sans FB", 0, 20)); // NOI18N
+        jLabel50.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel50.setText("$");
+        cerrar_caja.add(jLabel50, new org.netbeans.lib.awtextra.AbsoluteConstraints(1017, 360, 10, 30));
+
+        jLabel51.setFont(new java.awt.Font("Berlin Sans FB", 0, 20)); // NOI18N
+        jLabel51.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel51.setText("Total Deposito:");
+        cerrar_caja.add(jLabel51, new org.netbeans.lib.awtextra.AbsoluteConstraints(890, 360, 150, 30));
+
+        jPanel1.add(cerrar_caja, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 1100, 480));
 
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/min.png"))); // NOI18N
         jButton1.setContentAreaFilled(false);
         jButton1.setName(""); // NOI18N
-        jButton1.setOpaque(false);
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(1020, 5, 50, 30));
+        jPanel1.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(1160, 0, 50, 40));
 
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/close.png"))); // NOI18N
         jButton2.setContentAreaFilled(false);
@@ -2441,9 +2824,9 @@ public class sistema extends javax.swing.JFrame {
                 jButton2ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(1074, 0, 30, 40));
+        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(1220, 0, 30, 40));
 
-        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1110, 620));
+        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1250, 620));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -2478,7 +2861,7 @@ public class sistema extends javax.swing.JFrame {
         Agregar_prod.setVisible(false);
         Reg_venta.setVisible(true);
         prod.setModel(llenar());
-        MostrarTablaVentas();
+        MostrarTablaProductos();
         MostrarTablaCerveza();
         MostrarTablaDepositos();
         CajaTot();
@@ -2505,7 +2888,8 @@ public class sistema extends javax.swing.JFrame {
         cerrar_caja.setVisible(false);
         datos_inventarioo.setVisible(true);
         
-        MostrarTabla();
+        MostrarTablaCerveza_inv();
+        MostrarTablaProductos_inv();
     }//GEN-LAST:event_jLabel1MousePressed
 
     private void jLabel3MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel3MousePressed
@@ -2519,8 +2903,13 @@ public class sistema extends javax.swing.JFrame {
         Agregar_prod.setVisible(false);
         datos_inventarioo.setVisible(false);
         cerrar_caja.setVisible(true);
-        MostrarTablaVentas2();
+        MostrarTablaVentas2(); //Cerveza
+        MostrarTablaProductos2(); //Prod
+        MostrarTablaDepositos2(); //Dep y pagos
         fecha.setText(getFecha());
+        cvz.setText(SumaCerveza());
+        prd.setText(SumaProductos());
+        dep.setText(SumaPagosYDep());
     }//GEN-LAST:event_jLabel3MousePressed
 
     private void precioKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_precioKeyTyped
@@ -2650,7 +3039,7 @@ public class sistema extends javax.swing.JFrame {
             if (!Stock_Existe()) { //falta mult * cantidad
                 vender();
                 ActualizarVentas();
-                MostrarTablaVentas();
+                MostrarTablaProductos();
                 MostrarTablaCerveza();
                 MostrarTablaDepositos();
                 CajaTot();
@@ -2746,7 +3135,7 @@ public class sistema extends javax.swing.JFrame {
                 if (!Stock_Existe()) { //falta mult * cantidad
                     vender();
                     ActualizarVentas();
-                    MostrarTablaVentas();
+                    MostrarTablaProductos();
                     MostrarTablaCerveza();
                     MostrarTablaDepositos();
                     CajaTot();
@@ -2853,8 +3242,10 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JPanel cerrar_caja;
     private javax.swing.JComboBox<String> combx_prod;
     private javax.swing.JTextField contenido;
+    private javax.swing.JLabel cvz;
     private javax.swing.JScrollPane datos_inventario;
     private javax.swing.JPanel datos_inventarioo;
+    private javax.swing.JLabel dep;
     private javax.swing.JLabel fecha;
     private rojerusan.RSFotoCircle foto;
     private javax.swing.JButton jButton1;
@@ -2890,12 +3281,22 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel32;
     private javax.swing.JLabel jLabel33;
     private javax.swing.JLabel jLabel34;
+    private javax.swing.JLabel jLabel35;
     private javax.swing.JLabel jLabel36;
     private javax.swing.JLabel jLabel37;
     private javax.swing.JLabel jLabel38;
     private javax.swing.JLabel jLabel39;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel40;
+    private javax.swing.JLabel jLabel41;
+    private javax.swing.JLabel jLabel42;
+    private javax.swing.JLabel jLabel43;
+    private javax.swing.JLabel jLabel44;
+    private javax.swing.JLabel jLabel47;
+    private javax.swing.JLabel jLabel48;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel50;
+    private javax.swing.JLabel jLabel51;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
@@ -2905,12 +3306,16 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane7;
+    private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator10;
     private javax.swing.JSeparator jSeparator11;
@@ -2927,6 +3332,7 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JLabel mlolts;
     private javax.swing.JLabel name;
     private javax.swing.JTextField nombre;
+    private javax.swing.JLabel prd;
     private javax.swing.JLabel pre;
     private javax.swing.JTextField precio;
     private javax.swing.JTextField precio_existente;
@@ -2937,9 +3343,12 @@ public class sistema extends javax.swing.JFrame {
     private javax.swing.JTextField stock_existente;
     private javax.swing.JTable tabla_caja;
     private javax.swing.JTable tabla_cerv;
+    private javax.swing.JTable tabla_cerv_inv;
+    private javax.swing.JTable tabla_dep_caja;
     private javax.swing.JTable tabla_depositos;
+    private javax.swing.JTable tabla_pro_inv;
     private javax.swing.JTable tabla_prod;
-    private javax.swing.JTable tabla_productos;
+    private javax.swing.JTable tabla_prod_caja;
     private javax.swing.JTextArea texto_nota;
     // End of variables declaration//GEN-END:variables
 
