@@ -72,7 +72,7 @@ import javax.swing.table.TableColumnModel;
 public class sistema extends javax.swing.JFrame {
     conexionSQL cc = new conexionSQL();
     Connection con = cc.conexion();
-    String cerveza,productos,pagos,depo;
+    String cerveza,productos,pagos,depo,cerveza2;
     java.awt.Font f = new java.awt.Font("Berlin Sans FB", Font.NORMAL, 14);
     
     public sistema() {
@@ -82,6 +82,7 @@ public class sistema extends javax.swing.JFrame {
         this.setIconImage(new ImageIcon(getClass().getResource("/img/icon.png")).getImage());
         
         cerveza="categoria='Mega' OR categoria='Promo' OR categoria='Medias' OR categoria='Six' OR categoria='Familiar' OR categoria='Cuartitas' OR categoria='Doce' OR categoria='Caja' OR categoria='Bote' OR categoria='Latones' OR categoria='710'";
+        cerveza2="categoria='Mega' OR categoria='Medias' OR categoria='Familiar' OR categoria='Cuartitas' OR categoria='Bote' OR categoria='Latones' OR categoria='710'";
         productos = "categoria='Bebidas' OR categoria='Botanas' OR categoria='Cigarro' OR categoria='Hielo'";
         pagos = "categoria='Deposito Dev' OR categoria='Pago'";
         depo = "categoria='Deposito'";
@@ -203,20 +204,33 @@ public class sistema extends javax.swing.JFrame {
         DefaultComboBoxModel modelo = new DefaultComboBoxModel();
         String s ="select nombre_producto, categoria from productos order by nombre_producto;";
         modelo.addElement("Seleccionar");
-        
         try {
-          
           Statement st = con.createStatement();
           ResultSet res = st.executeQuery(s);
           while(res.next()) {
               modelo.addElement(res.getString(1)+", "+res.getString(2));
-          }
-          
+          }          
+        } catch (SQLException e) {
+            Icon iconoo = new ImageIcon(getClass().getResource("/img/list.png"));
+           JOptionPane.showMessageDialog(null, "Error al llenar JCombox", "Error JCombox", JOptionPane.PLAIN_MESSAGE, iconoo);
+        }        
+        return modelo;
+    }
+    
+    public DefaultComboBoxModel llenar2() {
+        DefaultComboBoxModel modelo = new DefaultComboBoxModel();
+        String s ="select nombre_producto, categoria from productos where "+cerveza2+" order by nombre_producto;";
+        modelo.addElement("Seleccionar");
+        try {
+          Statement st = con.createStatement();
+          ResultSet res = st.executeQuery(s);
+          while(res.next()) {
+              modelo.addElement(res.getString(1)+", "+res.getString(2));
+          } 
         } catch (SQLException e) {
             Icon iconoo = new ImageIcon(getClass().getResource("/img/list.png"));
            JOptionPane.showMessageDialog(null, "Error al llenar JCombox", "Error JCombox", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
-        
         return modelo;
     }
     
@@ -389,8 +403,8 @@ public class sistema extends javax.swing.JFrame {
         columnModel.getColumn(0).setPreferredWidth(60);
         columnModel.getColumn(1).setPreferredWidth(150);
         columnModel.getColumn(2).setPreferredWidth(250);
-        columnModel.getColumn(3).setPreferredWidth(50);
-        columnModel.getColumn(4).setPreferredWidth(150);
+        columnModel.getColumn(3).setPreferredWidth(100);
+        columnModel.getColumn(4).setPreferredWidth(100);
         
         tabla_pro_inv.setColumnModel(columnModel);
     }
@@ -447,7 +461,7 @@ public class sistema extends javax.swing.JFrame {
         
         tabla_cerv_inv.setModel(modelo);  
         
-        String sql = "SELECT idproductos,codigobarras,nombre_producto,categoria,stock FROM productos WHERE "+cerveza+" Order by nombre_producto;";
+        String sql = "SELECT idproductos,codigobarras,nombre_producto,categoria,stock FROM productos WHERE "+cerveza2+" Order by categoria DESC;";
         String vent[] = new String[5];
         int i=0;
         try {
@@ -472,8 +486,8 @@ public class sistema extends javax.swing.JFrame {
         columnModel.getColumn(0).setPreferredWidth(60);
         columnModel.getColumn(1).setPreferredWidth(150);
         columnModel.getColumn(2).setPreferredWidth(250);
-        columnModel.getColumn(3).setPreferredWidth(50);
-        columnModel.getColumn(4).setPreferredWidth(150);
+        columnModel.getColumn(3).setPreferredWidth(100);
+        columnModel.getColumn(4).setPreferredWidth(100);
         
         tabla_cerv_inv.setColumnModel(columnModel);
     }
@@ -481,7 +495,7 @@ public class sistema extends javax.swing.JFrame {
     public void MostrarTablaDepositos() {
         DefaultTableModel modelo = new DefaultTableModel();
         modelo.addColumn("No");
-        modelo.addColumn("Categoria");
+        modelo.addColumn("Nombre");
         modelo.addColumn("Total");
         
         tabla_depositos.setModel(modelo);  
@@ -651,7 +665,7 @@ public class sistema extends javax.swing.JFrame {
     
     public void MostrarTablaVentas2() {
         DefaultTableModel modelo = new DefaultTableModel();
-        modelo.addColumn("Venta No");
+        modelo.addColumn("No");
         modelo.addColumn("Producto");
         modelo.addColumn("Categoria");
         modelo.addColumn("Cantidad");
@@ -663,12 +677,13 @@ public class sistema extends javax.swing.JFrame {
         String sql = "SELECT idventa, producto,categoria,cantidad,total FROM ventas WHERE "+cerveza+" Order by idventa;";
         
         String vent[] = new String[5];
-        
+        int i=0;
         try {
         Statement st = con.createStatement();
         ResultSet res = st.executeQuery(sql);
             while (res.next()) {
-                vent[0] = res.getString(1);//idvente
+                i++;
+                vent[0] = Integer.toString(i);//idvente
                 vent[1] = res.getString(2);//producto
                 vent[2] = res.getString(3);//categoria
                 vent[3] = res.getString(4);//cantidad
@@ -682,11 +697,19 @@ public class sistema extends javax.swing.JFrame {
         }
         
         tabla_caja.getTableHeader().setFont(f);
+        TableColumnModel columnModel = tabla_caja.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(60);
+        columnModel.getColumn(1).setPreferredWidth(250);
+        columnModel.getColumn(2).setPreferredWidth(150);
+        columnModel.getColumn(3).setPreferredWidth(100);
+        columnModel.getColumn(4).setPreferredWidth(100);
+        
+        tabla_caja.setColumnModel(columnModel);
     }
     
     public void MostrarTablaProductos2() {
         DefaultTableModel modelo = new DefaultTableModel();
-        modelo.addColumn("Venta No");
+        modelo.addColumn("No");
         modelo.addColumn("Producto");
         modelo.addColumn("Categoria");
         modelo.addColumn("Cantidad");
@@ -714,17 +737,25 @@ public class sistema extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Error de Muestra DB1 "+e, "Error de DB", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
         tabla_prod_caja.getTableHeader().setFont(f);
+        TableColumnModel columnModel = tabla_prod_caja.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(60);
+        columnModel.getColumn(1).setPreferredWidth(250);
+        columnModel.getColumn(2).setPreferredWidth(150);
+        columnModel.getColumn(3).setPreferredWidth(100);
+        columnModel.getColumn(4).setPreferredWidth(100);
+        
+        tabla_prod_caja.setColumnModel(columnModel);
     }
     
     public void MostrarTablaDepositos2() {
         DefaultTableModel modelo = new DefaultTableModel();
-        modelo.addColumn("Venta No");
+        modelo.addColumn("No");
         modelo.addColumn("Categoria");
         modelo.addColumn("Total");
         
         tabla_dep_caja.setModel(modelo);  
         
-        String sql = "SELECT categoria,total FROM ventas WHERE "+depo+" or "+pagos+" Order by idventa;";
+        String sql = "SELECT producto,total FROM ventas WHERE "+depo+" or "+pagos+" Order by idventa;";
         String vent[] = new String[3];
         int i=0;
         try {
@@ -744,6 +775,12 @@ public class sistema extends javax.swing.JFrame {
         }
         
         tabla_dep_caja.getTableHeader().setFont(f);
+        TableColumnModel columnModel = tabla_dep_caja.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(60);
+        columnModel.getColumn(1).setPreferredWidth(250);
+        columnModel.getColumn(2).setPreferredWidth(150);
+        
+        tabla_dep_caja.setColumnModel(columnModel);
     }
     
     public void ImprimirCaja(JPanel pnl) {
@@ -835,7 +872,7 @@ public class sistema extends javax.swing.JFrame {
         
         try {
             String ruta = System.getProperty("user.home"); //para la ruta principal
-            PdfWriter.getInstance(documento, new FileOutputStream(ruta + "/Desktop/"+name)); //Cambiar nombre del reporte
+            PdfWriter.getInstance(documento, new FileOutputStream(ruta + "/Desktop/Reportes/"+name)); //Cambiar nombre del reporte
             Image header = Image.getInstance(getClass().getResource("/img/model.png"));
             header.scaleToFit(500, 1000);
             header.setAlignment(Chunk.ALIGN_CENTER);
@@ -1314,7 +1351,7 @@ public class sistema extends javax.swing.JFrame {
         
         try {
             String ruta = System.getProperty("user.home"); //para la ruta principal
-            PdfWriter.getInstance(documento, new FileOutputStream(ruta + "/Desktop/"+name)); //Cambiar nombre del reporte
+            PdfWriter.getInstance(documento, new FileOutputStream(ruta + "/Desktop/Inventario/"+name)); //Cambiar nombre del reporte
             Image header = Image.getInstance(getClass().getResource("/img/model.png"));
             header.scaleToFit(500, 1000);
             header.setAlignment(Chunk.ALIGN_CENTER);
@@ -1389,7 +1426,7 @@ public class sistema extends javax.swing.JFrame {
             ccatt.setPaddingTop(15);
             ccatt.setBorderWidth(0);
             
-            PdfPCell stkk = new PdfPCell(new Phrase("Categoria",f));
+            PdfPCell stkk = new PdfPCell(new Phrase("Stock",f));
             stkk.setBackgroundColor(head);
             stkk.setHorizontalAlignment(Element.ALIGN_LEFT);
             stkk.setVerticalAlignment(Element.ALIGN_CENTER);
@@ -1408,7 +1445,7 @@ public class sistema extends javax.swing.JFrame {
             tabla.addCell(stkk);
             
             //TABLA INVENTARIO
-            String sql="SELECT * FROM productos WHERE "+cerveza+";";
+            String sql="SELECT * FROM productos WHERE "+cerveza2+" Order by categoria DESC;";
             try {
                 Statement st = con.createStatement();
                 ResultSet res = st.executeQuery(sql);
@@ -1683,6 +1720,11 @@ public class sistema extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Error, en stock existente", "Error falta de productos", JOptionPane.PLAIN_MESSAGE, iconoo);
         }
         return exist;
+    }
+    
+    public void EliminarVenta() {
+        int a = tabla_cerv.getSelectedRow();
+        System.out.println("Datos : "+tabla_cerv.getValueAt(a, 1));
     }
     
     /**
@@ -2496,7 +2538,7 @@ public class sistema extends javax.swing.JFrame {
                 combx_prodActionPerformed(evt);
             }
         });
-        Agregar_prod.add(combx_prod, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 140, 160, -1));
+        Agregar_prod.add(combx_prod, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 140, 200, -1));
 
         jLabel25.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel25.setForeground(new java.awt.Color(255, 255, 255));
@@ -2576,7 +2618,7 @@ public class sistema extends javax.swing.JFrame {
                 ActualizarPrecio_existenteActionPerformed(evt);
             }
         });
-        Agregar_prod.add(ActualizarPrecio_existente, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 260, 170, -1));
+        Agregar_prod.add(ActualizarPrecio_existente, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 260, 170, -1));
 
         barras_existente.setBackground(new java.awt.Color(68, 132, 206));
         barras_existente.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
@@ -2590,7 +2632,7 @@ public class sistema extends javax.swing.JFrame {
                 barras_existenteKeyTyped(evt);
             }
         });
-        Agregar_prod.add(barras_existente, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 180, 110, 20));
+        Agregar_prod.add(barras_existente, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 180, 150, 20));
 
         AgregarProducto_existente.setBackground(new java.awt.Color(241, 159, 77));
         AgregarProducto_existente.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
@@ -2602,7 +2644,7 @@ public class sistema extends javax.swing.JFrame {
                 AgregarProducto_existenteActionPerformed(evt);
             }
         });
-        Agregar_prod.add(AgregarProducto_existente, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 360, 170, -1));
+        Agregar_prod.add(AgregarProducto_existente, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 360, 170, -1));
 
         jLabel34.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/money.png"))); // NOI18N
         Agregar_prod.add(jLabel34, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 250, 70, 50));
@@ -2614,7 +2656,7 @@ public class sistema extends javax.swing.JFrame {
         jLabel33.setForeground(new java.awt.Color(255, 255, 255));
         jLabel33.setText("Codigo de barras");
         Agregar_prod.add(jLabel33, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 180, 130, -1));
-        Agregar_prod.add(jSeparator14, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 200, 110, 10));
+        Agregar_prod.add(jSeparator14, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 200, 150, 10));
 
         barras_nuevo.setBackground(new java.awt.Color(68, 132, 206));
         barras_nuevo.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
@@ -2630,7 +2672,7 @@ public class sistema extends javax.swing.JFrame {
                 search1ActionPerformed(evt);
             }
         });
-        Agregar_prod.add(search1, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 170, 50, 40));
+        Agregar_prod.add(search1, new org.netbeans.lib.awtextra.AbsoluteConstraints(400, 170, 50, 40));
 
         jPanel1.add(Agregar_prod, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 140, 1100, 480));
 
@@ -2844,7 +2886,7 @@ public class sistema extends javax.swing.JFrame {
         cerrar_caja.setVisible(false);
         Agregar_prod.setVisible(true);
         
-        combx_prod.setModel(llenar());
+        combx_prod.setModel(llenar2());
     }//GEN-LAST:event_jLabel4MousePressed
 
     private void jLabel2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MousePressed
