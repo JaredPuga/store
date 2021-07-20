@@ -8,7 +8,6 @@ package formularios;
 import conexion.conexionSQL;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Panel;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
@@ -18,7 +17,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
@@ -26,7 +24,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import java.util.Date;
 
@@ -48,19 +45,16 @@ import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.sun.glass.events.KeyEvent;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.image.BufferedImage;
         
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Enumeration;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.TableColumnModelListener;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 
@@ -217,23 +211,6 @@ public class sistema extends javax.swing.JFrame {
         return modelo;
     }
     
-    public DefaultComboBoxModel llenar2() {
-        DefaultComboBoxModel modelo = new DefaultComboBoxModel();
-        String s ="select nombre_producto, categoria from productos where "+cerveza2+" order by nombre_producto;";
-        modelo.addElement("Seleccionar");
-        try {
-          Statement st = con.createStatement();
-          ResultSet res = st.executeQuery(s);
-          while(res.next()) {
-              modelo.addElement(res.getString(1)+", "+res.getString(2));
-          } 
-        } catch (SQLException e) {
-            Icon iconoo = new ImageIcon(getClass().getResource("/img/list.png"));
-           JOptionPane.showMessageDialog(null, "Error al llenar JCombox", "Error JCombox", JOptionPane.PLAIN_MESSAGE, iconoo);
-        }
-        return modelo;
-    }
-    
     public void vender() throws SQLException {
         String nom;
         int a=0;
@@ -266,7 +243,6 @@ public class sistema extends javax.swing.JFrame {
                     System.out.println(a +"<-- a en normal");
                 }   
             }
-            
         } catch (SQLException e) {
             Icon iconoo = new ImageIcon(getClass().getResource("/img/sell_error.png"));
             JOptionPane.showMessageDialog(null, "Error de venta en Stock", "Error de Stock", JOptionPane.PLAIN_MESSAGE, iconoo);
@@ -1364,7 +1340,7 @@ public class sistema extends javax.swing.JFrame {
             documento.add(header);
             documento.add(parrafo);
             
-            PdfPTable tabla = new PdfPTable(7);
+            PdfPTable tabla = new PdfPTable(4);
                         
             tabla.setWidthPercentage(100);
             
@@ -1386,7 +1362,7 @@ public class sistema extends javax.swing.JFrame {
             venta.setPaddingTop(15);
             venta.setBorderWidth(0);
             
-            PdfPCell producto = new PdfPCell(new Phrase("Codigo Barras",f));
+            PdfPCell producto = new PdfPCell(new Phrase("Nombre",f));
             producto.setBackgroundColor(head);
             producto.setHorizontalAlignment(Element.ALIGN_LEFT);
             producto.setVerticalAlignment(Element.ALIGN_CENTER);
@@ -1394,64 +1370,66 @@ public class sistema extends javax.swing.JFrame {
             producto.setPaddingTop(15);
             producto.setBorderWidth(0);
             
-            PdfPCell categoriaa = new PdfPCell(new Phrase("Nombre",f));
-            categoriaa.setBackgroundColor(head);
-            categoriaa.setHorizontalAlignment(Element.ALIGN_LEFT);
-            categoriaa.setVerticalAlignment(Element.ALIGN_CENTER);
-            categoriaa.setFixedHeight(50);
-            categoriaa.setPaddingTop(15);
-            categoriaa.setBorderWidth(0);
+            PdfPCell cajaa = new PdfPCell(new Phrase("Cajas",f));
+            cajaa.setBackgroundColor(head);
+            cajaa.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cajaa.setVerticalAlignment(Element.ALIGN_CENTER);
+            cajaa.setFixedHeight(50);
+            cajaa.setPaddingTop(15);
+            cajaa.setBorderWidth(0);
             
-            PdfPCell cantidadd = new PdfPCell(new Phrase("Contenido",f));
-            cantidadd.setBackgroundColor(head);
-            cantidadd.setHorizontalAlignment(Element.ALIGN_LEFT);
-            cantidadd.setVerticalAlignment(Element.ALIGN_CENTER);
-            cantidadd.setFixedHeight(50);
-            cantidadd.setPaddingTop(15);
-            cantidadd.setBorderWidth(0);
-            
-            PdfPCell total = new PdfPCell(new Phrase("Precio",f));
-            total.setBackgroundColor(head);
-            total.setHorizontalAlignment(Element.ALIGN_LEFT);
-            total.setVerticalAlignment(Element.ALIGN_CENTER);
-            total.setFixedHeight(50);
-            total.setPaddingTop(15);
-            total.setBorderWidth(0);
-            
-            PdfPCell ccatt = new PdfPCell(new Phrase("Categoria",f));
-            ccatt.setBackgroundColor(head);
-            ccatt.setHorizontalAlignment(Element.ALIGN_LEFT);
-            ccatt.setVerticalAlignment(Element.ALIGN_CENTER);
-            ccatt.setFixedHeight(50);
-            ccatt.setPaddingTop(15);
-            ccatt.setBorderWidth(0);
-            
-            PdfPCell stkk = new PdfPCell(new Phrase("Stock",f));
-            stkk.setBackgroundColor(head);
-            stkk.setHorizontalAlignment(Element.ALIGN_LEFT);
-            stkk.setVerticalAlignment(Element.ALIGN_CENTER);
-            stkk.setFixedHeight(50);
-            stkk.setPaddingTop(15);
-            stkk.setBorderWidth(0);
+            PdfPCell unidd = new PdfPCell(new Phrase("Unidad",f));
+            unidd.setBackgroundColor(head);
+            unidd.setHorizontalAlignment(Element.ALIGN_CENTER);
+            unidd.setVerticalAlignment(Element.ALIGN_CENTER);
+            unidd.setFixedHeight(50);
+            unidd.setPaddingTop(15);
+            unidd.setBorderWidth(0);
             
             //TABLA INVENTARIO
             
             tabla.addCell(venta);
             tabla.addCell(producto);
-            tabla.addCell(categoriaa);
-            tabla.addCell(cantidadd);
-            tabla.addCell(total);
-            tabla.addCell(ccatt);
-            tabla.addCell(stkk);
+            tabla.addCell(cajaa);
+            tabla.addCell(unidd);
             
             //TABLA INVENTARIO
-            String sql="SELECT * FROM productos WHERE "+cerveza2+" Order by categoria DESC;";
+            String sql="SELECT categoria, stock, nombre_producto FROM productos WHERE "+cerveza2+" Order by categoria DESC;";
+            double ca=0, un=0,ca2=0,ca3=0;
+            String ccaj="",unn="";
+            NumberFormat nf = new DecimalFormat("##.###");
             try {
                 Statement st = con.createStatement();
                 ResultSet res = st.executeQuery(sql);
                 int id_v = 0;
                 if (res.next()) {
                     do {
+                        if (res.getString(1).equals("Mega") || res.getString(1).equals("Familiar") || res.getString(1).equals("710")) {
+                            ca = Double.parseDouble(res.getString(2));
+                            ca2 = Double.parseDouble(res.getString(2));
+                            ca3 = Double.parseDouble(res.getString(2));
+                            ca2 = ca/12;
+                            un = ca2%1;
+                            ca = ca2-un;
+                            ccaj = nf.format(ca);
+                            if (un>0) {
+                                un = ca3-(ca*12);
+                                unn = nf.format(un);
+                            }
+                        }
+                        if (res.getString(1).equals("Latones") || res.getString(1).equals("Bote") || res.getString(1).equals("Cuartitas") || res.getString(1).equals("Medias")) {
+                            ca = Double.parseDouble(res.getString(2));
+                            ca2 = Double.parseDouble(res.getString(2));
+                            ca3 = Double.parseDouble(res.getString(2));
+                            ca2 = ca/24;
+                            un = ca2%1;
+                            ca = ca2-un;
+                            ccaj = nf.format(ca);
+                            if (un>0) {
+                                un = ca3-(ca*24);
+                                unn = nf.format(un);
+                            }
+                        }
                         id_v++;
                         PdfPCell idd = new PdfPCell(new Phrase(Integer.toString(id_v),f2)); //IDPRODUCTOS
                         if (id_v%2==0) {
@@ -1462,17 +1440,7 @@ public class sistema extends javax.swing.JFrame {
                         idd.setHorizontalAlignment(Element.ALIGN_CENTER);
                         idd.setBorderWidth(0);
                         tabla.addCell(idd);
-                        
-                        PdfPCell proo = new PdfPCell(new Phrase(res.getString(2),f2)); //CODIGO BARRAS
-                        if (id_v%2==0) {
-                            proo.setBackgroundColor(tab1);
-                        } else {
-                            proo.setBackgroundColor(tab2);
-                        }
-                        proo.setHorizontalAlignment(Element.ALIGN_LEFT);
-                        proo.setBorderWidth(0);
-                        tabla.addCell(proo);
-                        
+
                         PdfPCell cat = new PdfPCell(new Phrase(res.getString(3),f2)); //NOMBRE_PRODUCTO
                         if (id_v%2==0) {
                             cat.setBackgroundColor(tab1);
@@ -1483,55 +1451,32 @@ public class sistema extends javax.swing.JFrame {
                         cat.setBorderWidth(0);
                         tabla.addCell(cat);
                         
-                        PdfPCell cant = new PdfPCell(new Phrase(res.getString(4),f2)); //CONTENIDO
+                        PdfPCell cajas = new PdfPCell(new Phrase(ccaj,f2)); //Cajas
                         if (id_v%2==0) {
-                            cant.setBackgroundColor(tab1);
+                            cajas.setBackgroundColor(tab1);
                         } else {
-                            cant.setBackgroundColor(tab2);
+                            cajas.setBackgroundColor(tab2);
                         }
-                        cant.setHorizontalAlignment(Element.ALIGN_LEFT);
-                        cant.setBorderWidth(0);
-                        tabla.addCell(cant);
+                        cajas.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        cajas.setBorderWidth(0);
+                        tabla.addCell(cajas);
                         
-                        PdfPCell prr = new PdfPCell(new Phrase("$ "+res.getString(5),f2)); //PRECIO
+                        PdfPCell unidad = new PdfPCell(new Phrase(unn,f2)); //Unidad
                         if (id_v%2==0) {
-                            prr.setBackgroundColor(tab1);
+                            unidad.setBackgroundColor(tab1);
                         } else {
-                            prr.setBackgroundColor(tab2);
+                            unidad.setBackgroundColor(tab2);
                         }
-                        prr.setHorizontalAlignment(Element.ALIGN_LEFT);
-                        prr.setBorderWidth(0);
-                        tabla.addCell(prr);
-                        
-                        PdfPCell categ = new PdfPCell(new Phrase(res.getString(6),f2)); //CATEGORIA
-                        if (id_v%2==0) {
-                            categ.setBackgroundColor(tab1);
-                        } else {
-                            categ.setBackgroundColor(tab2);
-                        }
-                        categ.setHorizontalAlignment(Element.ALIGN_LEFT);
-                        categ.setBorderWidth(0);
-                        tabla.addCell(categ);
-                        
-                        PdfPCell stk = new PdfPCell(new Phrase(res.getString(7),f2)); //PRECIO
-                        if (id_v%2==0) {
-                            stk.setBackgroundColor(tab1);
-                        } else {
-                            stk.setBackgroundColor(tab2);
-                        }
-                        if (res.getInt(7)==0) {
-                            stk.setBackgroundColor(error);
-                        } 
-                        stk.setHorizontalAlignment(Element.ALIGN_LEFT);
-                        stk.setBorderWidth(0);
-                        tabla.addCell(stk);
+                        unidad.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        unidad.setBorderWidth(0);
+                        tabla.addCell(unidad);
                     } while (res.next());
                     documento.add(tabla);
                 }
        
             } catch (SQLException e) {
                 Icon iconoo = new ImageIcon(getClass().getResource("/img/pdf.png"));
-                JOptionPane.showMessageDialog(null, "Error generando PDF Inventario", "Error PDF", JOptionPane.PLAIN_MESSAGE, iconoo);
+                JOptionPane.showMessageDialog(null, "Error generando PDF Inventario "+e, "Error PDF", JOptionPane.PLAIN_MESSAGE, iconoo);
             }
             
 
@@ -2524,21 +2469,21 @@ public class sistema extends javax.swing.JFrame {
         jLabel6.setForeground(new java.awt.Color(255, 255, 255));
         jLabel6.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel6.setText("Existente");
-        Agregar_prod.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 0, 550, 90));
+        Agregar_prod.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 550, 90));
 
         jLabel23.setBackground(new java.awt.Color(255, 255, 255));
         jLabel23.setFont(new java.awt.Font("Berlin Sans FB", 0, 36)); // NOI18N
         jLabel23.setForeground(new java.awt.Color(255, 255, 255));
         jLabel23.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel23.setText("Nuevo");
-        Agregar_prod.add(jLabel23, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 550, 90));
+        Agregar_prod.add(jLabel23, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 0, 550, 90));
 
         combx_prod.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 combx_prodActionPerformed(evt);
             }
         });
-        Agregar_prod.add(combx_prod, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 140, 200, -1));
+        Agregar_prod.add(combx_prod, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 140, 210, -1));
 
         jLabel25.setFont(new java.awt.Font("Berlin Sans FB", 0, 18)); // NOI18N
         jLabel25.setForeground(new java.awt.Color(255, 255, 255));
@@ -2797,12 +2742,12 @@ public class sistema extends javax.swing.JFrame {
 
         fecha.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
         fecha.setForeground(new java.awt.Color(255, 255, 255));
-        cerrar_caja.add(fecha, new org.netbeans.lib.awtextra.AbsoluteConstraints(900, 0, 193, 50));
+        cerrar_caja.add(fecha, new org.netbeans.lib.awtextra.AbsoluteConstraints(950, 0, 150, 50));
 
         jLabel19.setFont(new java.awt.Font("Berlin Sans FB", 0, 24)); // NOI18N
         jLabel19.setForeground(new java.awt.Color(255, 255, 255));
         jLabel19.setText("Ventas del dia");
-        cerrar_caja.add(jLabel19, new org.netbeans.lib.awtextra.AbsoluteConstraints(750, 0, 160, 50));
+        cerrar_caja.add(jLabel19, new org.netbeans.lib.awtextra.AbsoluteConstraints(800, 0, 160, 50));
 
         jLabel43.setFont(new java.awt.Font("Berlin Sans FB", 0, 20)); // NOI18N
         jLabel43.setForeground(new java.awt.Color(255, 255, 255));
@@ -2886,7 +2831,7 @@ public class sistema extends javax.swing.JFrame {
         cerrar_caja.setVisible(false);
         Agregar_prod.setVisible(true);
         
-        combx_prod.setModel(llenar2());
+        combx_prod.setModel(llenar());
     }//GEN-LAST:event_jLabel4MousePressed
 
     private void jLabel2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MousePressed
