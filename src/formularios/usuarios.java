@@ -33,7 +33,8 @@ public class usuarios extends javax.swing.JFrame {
         TextPrompt us = new TextPrompt("Usuario", user);
         TextPrompt ps = new TextPrompt("Contraseña", pass);
         this.setLocationRelativeTo(null);
-        this.setIconImage(new ImageIcon(getClass().getResource("/img/icon.png")).getImage());
+        this.setIconImage(new ImageIcon(getClass().getResource("/img/vaso2.png")).getImage());
+        this.setTitle("Login | Modelorama");
     }
     
     

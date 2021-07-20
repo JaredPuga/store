@@ -73,8 +73,8 @@ public class sistema extends javax.swing.JFrame {
         initComponents();
         this.setLocationRelativeTo(null);
         setNombre();
-        this.setIconImage(new ImageIcon(getClass().getResource("/img/icon.png")).getImage());
-        
+        this.setIconImage(new ImageIcon(getClass().getResource("/img/vaso2.png")).getImage());
+        this.setTitle("Punto de Venta | Modelorama");
         cerveza="categoria='Mega' OR categoria='Promo' OR categoria='Medias' OR categoria='Six' OR categoria='Familiar' OR categoria='Cuartitas' OR categoria='Doce' OR categoria='Caja' OR categoria='Bote' OR categoria='Latones' OR categoria='710'";
         cerveza2="categoria='Mega' OR categoria='Medias' OR categoria='Familiar' OR categoria='Cuartitas' OR categoria='Bote' OR categoria='Latones' OR categoria='710'";
         productos = "categoria='Bebidas' OR categoria='Botanas' OR categoria='Cigarro' OR categoria='Hielo'";
@@ -1322,6 +1322,15 @@ public class sistema extends javax.swing.JFrame {
         }
 }
     
+    public Paragraph parraf(String n) {
+        Paragraph parrafo1 = new Paragraph();
+        parrafo1.setAlignment(Paragraph.ALIGN_LEFT);
+        parrafo1.setFont(FontFactory.getFont(FontFactory.COURIER_BOLD, 14, Font.NORMAL));
+        parrafo1.add(n);
+        
+        return parrafo1;
+    }
+    
     public void Imprimir3(String name) {
         Document documento = new Document();
         
@@ -1331,18 +1340,38 @@ public class sistema extends javax.swing.JFrame {
             Image header = Image.getInstance(getClass().getResource("/img/model.png"));
             header.scaleToFit(500, 1000);
             header.setAlignment(Chunk.ALIGN_CENTER);
+            header.setPaddingTop(0);
             
             Paragraph parrafo = new Paragraph();
             parrafo.setAlignment(Paragraph.ALIGN_LEFT);
             parrafo.setFont(FontFactory.getFont(FontFactory.COURIER_BOLD, 14, Font.NORMAL));
             parrafo.add("Inventario del día "+getFecha()+"\n\n");
+            parrafo.setPaddingTop(0);
             documento.open();
+            documento.setMarginMirroringTopBottom(false);
+            documento.top(0);
             documento.add(header);
             documento.add(parrafo);
             
             PdfPTable tabla = new PdfPTable(4);
-                        
+            PdfPTable tabla2 = new PdfPTable(4);
+            PdfPTable tabla3 = new PdfPTable(4);
+            PdfPTable tabla4 = new PdfPTable(4);
+            PdfPTable tabla5 = new PdfPTable(4);
+            PdfPTable tabla6 = new PdfPTable(4);
+            PdfPTable tabla7 = new PdfPTable(4);
+            PdfPTable tabla8 = new PdfPTable(4);
+            PdfPTable tabla9 = new PdfPTable(4);
+            
             tabla.setWidthPercentage(100);
+            tabla2.setWidthPercentage(100);
+            tabla3.setWidthPercentage(100);
+            tabla4.setWidthPercentage(100);
+            tabla5.setWidthPercentage(100);
+            tabla6.setWidthPercentage(100);
+            tabla7.setWidthPercentage(100);
+            tabla8.setWidthPercentage(100);
+            tabla9.setWidthPercentage(100);
             
             Font f = FontFactory.getFont(FontFactory.COURIER);
             f.setColor(BaseColor.WHITE);
@@ -1358,7 +1387,7 @@ public class sistema extends javax.swing.JFrame {
             venta.setBackgroundColor(head);
             venta.setHorizontalAlignment(Element.ALIGN_CENTER);
             venta.setVerticalAlignment(Element.ALIGN_CENTER);
-            venta.setFixedHeight(50);
+            venta.setFixedHeight(40);
             venta.setPaddingTop(15);
             venta.setBorderWidth(0);
             
@@ -1366,7 +1395,7 @@ public class sistema extends javax.swing.JFrame {
             producto.setBackgroundColor(head);
             producto.setHorizontalAlignment(Element.ALIGN_LEFT);
             producto.setVerticalAlignment(Element.ALIGN_CENTER);
-            producto.setFixedHeight(50);
+            producto.setFixedHeight(40);
             producto.setPaddingTop(15);
             producto.setBorderWidth(0);
             
@@ -1374,7 +1403,7 @@ public class sistema extends javax.swing.JFrame {
             cajaa.setBackgroundColor(head);
             cajaa.setHorizontalAlignment(Element.ALIGN_CENTER);
             cajaa.setVerticalAlignment(Element.ALIGN_CENTER);
-            cajaa.setFixedHeight(50);
+            cajaa.setFixedHeight(40);
             cajaa.setPaddingTop(15);
             cajaa.setBorderWidth(0);
             
@@ -1382,7 +1411,7 @@ public class sistema extends javax.swing.JFrame {
             unidd.setBackgroundColor(head);
             unidd.setHorizontalAlignment(Element.ALIGN_CENTER);
             unidd.setVerticalAlignment(Element.ALIGN_CENTER);
-            unidd.setFixedHeight(50);
+            unidd.setFixedHeight(40);
             unidd.setPaddingTop(15);
             unidd.setBorderWidth(0);
             
@@ -1393,31 +1422,50 @@ public class sistema extends javax.swing.JFrame {
             tabla.addCell(cajaa);
             tabla.addCell(unidd);
             
-            //TABLA INVENTARIO
-            String sql="SELECT categoria, stock, nombre_producto FROM productos WHERE "+cerveza2+" Order by categoria DESC;";
+            tabla2.addCell(venta);
+            tabla2.addCell(producto);
+            tabla2.addCell(cajaa);
+            tabla2.addCell(unidd);
+            
+            tabla3.addCell(venta);
+            tabla3.addCell(producto);
+            tabla3.addCell(cajaa);
+            tabla3.addCell(unidd);
+            
+            tabla4.addCell(venta);
+            tabla4.addCell(producto);
+            tabla4.addCell(cajaa);
+            tabla4.addCell(unidd);
+            
+            tabla5.addCell(venta);
+            tabla5.addCell(producto);
+            tabla5.addCell(cajaa);
+            tabla5.addCell(unidd);
+            
+            tabla6.addCell(venta);
+            tabla6.addCell(producto);
+            tabla6.addCell(cajaa);
+            tabla6.addCell(unidd);
+            
+            tabla7.addCell(venta);
+            tabla7.addCell(producto);
+            tabla7.addCell(cajaa);
+            tabla7.addCell(unidd);
+            
+            tabla8.addCell(venta);
+            tabla8.addCell(producto);
+            tabla8.addCell(cajaa);
+            tabla8.addCell(unidd);
+            
+            tabla9.addCell(venta);
+            tabla9.addCell(producto);
+            tabla9.addCell(cajaa);
+            tabla9.addCell(unidd);
+            
             double ca=0, un=0,ca2=0,ca3=0;
             String ccaj="",unn="";
             NumberFormat nf = new DecimalFormat("##.###");
-            try {
-                Statement st = con.createStatement();
-                ResultSet res = st.executeQuery(sql);
-                int id_v = 0;
-                if (res.next()) {
-                    do {
-                        if (res.getString(1).equals("Mega") || res.getString(1).equals("Familiar") || res.getString(1).equals("710")) {
-                            ca = Double.parseDouble(res.getString(2));
-                            ca2 = Double.parseDouble(res.getString(2));
-                            ca3 = Double.parseDouble(res.getString(2));
-                            ca2 = ca/12;
-                            un = ca2%1;
-                            ca = ca2-un;
-                            ccaj = nf.format(ca);
-                            if (un>0) {
-                                un = ca3-(ca*12);
-                                unn = nf.format(un);
-                            }
-                        }
-                        if (res.getString(1).equals("Latones") || res.getString(1).equals("Bote") || res.getString(1).equals("Cuartitas") || res.getString(1).equals("Medias")) {
+            /*if (res.getString(1).equals("Latones") || res.getString(1).equals("Bote") || res.getString(1).equals("Cuartitas") || res.getString(1).equals("Medias")) {
                             ca = Double.parseDouble(res.getString(2));
                             ca2 = Double.parseDouble(res.getString(2));
                             ca3 = Double.parseDouble(res.getString(2));
@@ -1429,6 +1477,40 @@ public class sistema extends javax.swing.JFrame {
                                 un = ca3-(ca*24);
                                 unn = nf.format(un);
                             }
+                        }
+                        if (res.getString(3).equals("Modelo Especial Md") || res.getString(3).equals("Modelo Noche Esp") || res.getString(3).equals("Modelo Negra Esp") || res.getString(3).equals("Modelo Trigo") || res.getString(1).equals("Mega") || res.getString(1).equals("Familiar") || res.getString(1).equals("710")) {
+                            ca = Double.parseDouble(res.getString(2));
+                            ca2 = Double.parseDouble(res.getString(2));
+                            ca3 = Double.parseDouble(res.getString(2));
+                            ca2 = ca/12;
+                            un = ca2%1;
+                            ca = ca2-un;
+                            ccaj = nf.format(ca);
+                            if (un>=0) {
+                                un = ca3-(ca*12);
+                                unn = nf.format(un);
+                            }
+            }*/
+            
+            
+            //TABLA INVENTARIO
+            String sql="SELECT categoria, stock, nombre_producto FROM productos WHERE categoria='Mega' Order by categoria DESC;";
+            try {
+                Statement st = con.createStatement();
+                ResultSet res = st.executeQuery(sql);
+                int id_v = 0;
+                if (res.next()) {
+                    do {
+                        ca = Double.parseDouble(res.getString(2));
+                        ca2 = Double.parseDouble(res.getString(2));
+                        ca3 = Double.parseDouble(res.getString(2));
+                        ca2 = ca/12;
+                        un = ca2%1;
+                        ca = ca2-un;
+                        ccaj = nf.format(ca);
+                        if (un>=0) {
+                            un = ca3-(ca*12);
+                            unn = nf.format(un);
                         }
                         id_v++;
                         PdfPCell idd = new PdfPCell(new Phrase(Integer.toString(id_v),f2)); //IDPRODUCTOS
@@ -1471,7 +1553,7 @@ public class sistema extends javax.swing.JFrame {
                         unidad.setBorderWidth(0);
                         tabla.addCell(unidad);
                     } while (res.next());
-                    documento.add(tabla);
+                    
                 }
        
             } catch (SQLException e) {
@@ -1479,7 +1561,439 @@ public class sistema extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "Error generando PDF Inventario "+e, "Error PDF", JOptionPane.PLAIN_MESSAGE, iconoo);
             }
             
+            String sql2="SELECT categoria, stock, nombre_producto FROM productos WHERE categoria='Medias' Order by categoria DESC;";
+            try {
+                Statement st = con.createStatement();
+                ResultSet res = st.executeQuery(sql2);
+                int id_v = 0;
+                if (res.next()) {
+                    do {
+                        ca = Double.parseDouble(res.getString(2));
+                        ca2 = Double.parseDouble(res.getString(2));
+                        ca3 = Double.parseDouble(res.getString(2));
+                        ca2 = ca/24;
+                        un = ca2%1;
+                        ca = ca2-un;
+                        ccaj = nf.format(ca);
+                        if (un>=0) {
+                            un = ca3-(ca*24);
+                            unn = nf.format(un);
+                        }
+                        if (res.getString(3).equals("Modelo Especial Md") || res.getString(3).equals("Modelo Noche Esp") || res.getString(3).equals("Modelo Negra Esp") || res.getString(3).equals("Modelo Trigo")) {
+                            ca = Double.parseDouble(res.getString(2));
+                            ca2 = Double.parseDouble(res.getString(2));
+                            ca3 = Double.parseDouble(res.getString(2));
+                            ca2 = ca/12;
+                            un = ca2%1;
+                            ca = ca2-un;
+                            ccaj = nf.format(ca);
+                        if (un>=0) {
+                            un = ca3-(ca*12);
+                            unn = nf.format(un);
+                        }
+                        }
+                        id_v++;
+                        PdfPCell idd = new PdfPCell(new Phrase(Integer.toString(id_v),f2)); //IDPRODUCTOS
+                        if (id_v%2==0) {
+                            idd.setBackgroundColor(tab1);
+                        } else {
+                            idd.setBackgroundColor(tab2);
+                        }
+                        idd.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        idd.setBorderWidth(0);
+                        tabla2.addCell(idd);
 
+                        PdfPCell cat = new PdfPCell(new Phrase(res.getString(3),f2)); //NOMBRE_PRODUCTO
+                        if (id_v%2==0) {
+                            cat.setBackgroundColor(tab1);
+                        } else {
+                            cat.setBackgroundColor(tab2);
+                        }
+                        cat.setHorizontalAlignment(Element.ALIGN_LEFT);
+                        cat.setBorderWidth(0);
+                        tabla2.addCell(cat);
+                        
+                        PdfPCell cajas = new PdfPCell(new Phrase(ccaj,f2)); //Cajas
+                        if (id_v%2==0) {
+                            cajas.setBackgroundColor(tab1);
+                        } else {
+                            cajas.setBackgroundColor(tab2);
+                        }
+                        cajas.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        cajas.setBorderWidth(0);
+                        tabla2.addCell(cajas);
+                        
+                        PdfPCell unidad = new PdfPCell(new Phrase(unn,f2)); //Unidad
+                        if (id_v%2==0) {
+                            unidad.setBackgroundColor(tab1);
+                        } else {
+                            unidad.setBackgroundColor(tab2);
+                        }
+                        unidad.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        unidad.setBorderWidth(0);
+                        tabla2.addCell(unidad);
+                    } while (res.next());  
+                }
+       
+            } catch (SQLException e) {
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/pdf.png"));
+                JOptionPane.showMessageDialog(null, "Error generando PDF Inventario "+e, "Error PDF", JOptionPane.PLAIN_MESSAGE, iconoo);
+            }
+            
+            String sql3="SELECT categoria, stock, nombre_producto FROM productos WHERE categoria='Familiar' Order by categoria DESC;";
+            try {
+                Statement st = con.createStatement();
+                ResultSet res = st.executeQuery(sql3);
+                int id_v = 0;
+                if (res.next()) {
+                    do {
+                        ca = Double.parseDouble(res.getString(2));
+                        ca2 = Double.parseDouble(res.getString(2));
+                        ca3 = Double.parseDouble(res.getString(2));
+                        ca2 = ca/12;
+                        un = ca2%1;
+                        ca = ca2-un;
+                        ccaj = nf.format(ca);
+                        if (un>=0) {
+                            un = ca3-(ca*12);
+                            unn = nf.format(un);
+                        }
+                        id_v++;
+                        PdfPCell idd = new PdfPCell(new Phrase(Integer.toString(id_v),f2)); //IDPRODUCTOS
+                        if (id_v%2==0) {
+                            idd.setBackgroundColor(tab1);
+                        } else {
+                            idd.setBackgroundColor(tab2);
+                        }
+                        idd.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        idd.setBorderWidth(0);
+                        tabla3.addCell(idd);
+
+                        PdfPCell cat = new PdfPCell(new Phrase(res.getString(3),f2)); //NOMBRE_PRODUCTO
+                        if (id_v%2==0) {
+                            cat.setBackgroundColor(tab1);
+                        } else {
+                            cat.setBackgroundColor(tab2);
+                        }
+                        cat.setHorizontalAlignment(Element.ALIGN_LEFT);
+                        cat.setBorderWidth(0);
+                        tabla3.addCell(cat);
+                        
+                        PdfPCell cajas = new PdfPCell(new Phrase(ccaj,f2)); //Cajas
+                        if (id_v%2==0) {
+                            cajas.setBackgroundColor(tab1);
+                        } else {
+                            cajas.setBackgroundColor(tab2);
+                        }
+                        cajas.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        cajas.setBorderWidth(0);
+                        tabla3.addCell(cajas);
+                        
+                        PdfPCell unidad = new PdfPCell(new Phrase(unn,f2)); //Unidad
+                        if (id_v%2==0) {
+                            unidad.setBackgroundColor(tab1);
+                        } else {
+                            unidad.setBackgroundColor(tab2);
+                        }
+                        unidad.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        unidad.setBorderWidth(0);
+                        tabla3.addCell(unidad);
+                    } while (res.next());
+                    
+                }
+       
+            } catch (SQLException e) {
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/pdf.png"));
+                JOptionPane.showMessageDialog(null, "Error generando PDF Inventario "+e, "Error PDF", JOptionPane.PLAIN_MESSAGE, iconoo);
+            }
+            
+            String sql4="SELECT categoria, stock, nombre_producto FROM productos WHERE categoria='Cuartitas' Order by categoria DESC;";
+            try {
+                Statement st = con.createStatement();
+                ResultSet res = st.executeQuery(sql4);
+                int id_v = 0;
+                if (res.next()) {
+                    do {
+                        ca = Double.parseDouble(res.getString(2));
+                        ca2 = Double.parseDouble(res.getString(2));
+                        ca3 = Double.parseDouble(res.getString(2));
+                        ca2 = ca/24;
+                        un = ca2%1;
+                        ca = ca2-un;
+                        ccaj = nf.format(ca);
+                        if (un>=0) {
+                            un = ca3-(ca*24);
+                            unn = nf.format(un);
+                        }
+                        id_v++;
+                        PdfPCell idd = new PdfPCell(new Phrase(Integer.toString(id_v),f2)); //IDPRODUCTOS
+                        if (id_v%2==0) {
+                            idd.setBackgroundColor(tab1);
+                        } else {
+                            idd.setBackgroundColor(tab2);
+                        }
+                        idd.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        idd.setBorderWidth(0);
+                        tabla4.addCell(idd);
+
+                        PdfPCell cat = new PdfPCell(new Phrase(res.getString(3),f2)); //NOMBRE_PRODUCTO
+                        if (id_v%2==0) {
+                            cat.setBackgroundColor(tab1);
+                        } else {
+                            cat.setBackgroundColor(tab2);
+                        }
+                        cat.setHorizontalAlignment(Element.ALIGN_LEFT);
+                        cat.setBorderWidth(0);
+                        tabla4.addCell(cat);
+                        
+                        PdfPCell cajas = new PdfPCell(new Phrase(ccaj,f2)); //Cajas
+                        if (id_v%2==0) {
+                            cajas.setBackgroundColor(tab1);
+                        } else {
+                            cajas.setBackgroundColor(tab2);
+                        }
+                        cajas.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        cajas.setBorderWidth(0);
+                        tabla4.addCell(cajas);
+                        
+                        PdfPCell unidad = new PdfPCell(new Phrase(unn,f2)); //Unidad
+                        if (id_v%2==0) {
+                            unidad.setBackgroundColor(tab1);
+                        } else {
+                            unidad.setBackgroundColor(tab2);
+                        }
+                        unidad.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        unidad.setBorderWidth(0);
+                        tabla4.addCell(unidad);
+                    } while (res.next());
+                    
+                }
+       
+            } catch (SQLException e) {
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/pdf.png"));
+                JOptionPane.showMessageDialog(null, "Error generando PDF Inventario "+e, "Error PDF", JOptionPane.PLAIN_MESSAGE, iconoo);
+            }
+            
+            
+            
+            
+            
+            String sql6="SELECT categoria, stock, nombre_producto FROM productos WHERE categoria='Bote' Order by categoria DESC;";
+            try {
+                Statement st = con.createStatement();
+                ResultSet res = st.executeQuery(sql6);
+                int id_v = 0;
+                if (res.next()) {
+                    do {
+                        ca = Double.parseDouble(res.getString(2));
+                        ca2 = Double.parseDouble(res.getString(2));
+                        ca3 = Double.parseDouble(res.getString(2));
+                        ca2 = ca/24;
+                        un = ca2%1;
+                        ca = ca2-un;
+                        ccaj = nf.format(ca);
+                        if (un>=0) {
+                            un = ca3-(ca*24);
+                            unn = nf.format(un);
+                        }
+                        id_v++;
+                        PdfPCell idd = new PdfPCell(new Phrase(Integer.toString(id_v),f2)); //IDPRODUCTOS
+                        if (id_v%2==0) {
+                            idd.setBackgroundColor(tab1);
+                        } else {
+                            idd.setBackgroundColor(tab2);
+                        }
+                        idd.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        idd.setBorderWidth(0);
+                        tabla6.addCell(idd);
+
+                        PdfPCell cat = new PdfPCell(new Phrase(res.getString(3),f2)); //NOMBRE_PRODUCTO
+                        if (id_v%2==0) {
+                            cat.setBackgroundColor(tab1);
+                        } else {
+                            cat.setBackgroundColor(tab2);
+                        }
+                        cat.setHorizontalAlignment(Element.ALIGN_LEFT);
+                        cat.setBorderWidth(0);
+                        tabla6.addCell(cat);
+                        
+                        PdfPCell cajas = new PdfPCell(new Phrase(ccaj,f2)); //Cajas
+                        if (id_v%2==0) {
+                            cajas.setBackgroundColor(tab1);
+                        } else {
+                            cajas.setBackgroundColor(tab2);
+                        }
+                        cajas.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        cajas.setBorderWidth(0);
+                        tabla6.addCell(cajas);
+                        
+                        PdfPCell unidad = new PdfPCell(new Phrase(unn,f2)); //Unidad
+                        if (id_v%2==0) {
+                            unidad.setBackgroundColor(tab1);
+                        } else {
+                            unidad.setBackgroundColor(tab2);
+                        }
+                        unidad.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        unidad.setBorderWidth(0);
+                        tabla6.addCell(unidad);
+                    } while (res.next());
+                    
+                }
+       
+            } catch (SQLException e) {
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/pdf.png"));
+                JOptionPane.showMessageDialog(null, "Error generando PDF Inventario "+e, "Error PDF", JOptionPane.PLAIN_MESSAGE, iconoo);
+            }
+            
+            String sql7="SELECT categoria, stock, nombre_producto FROM productos WHERE categoria='Latones' Order by categoria DESC;";
+            try {
+                Statement st = con.createStatement();
+                ResultSet res = st.executeQuery(sql7);
+                int id_v = 0;
+                if (res.next()) {
+                    do {
+                        ca = Double.parseDouble(res.getString(2));
+                        ca2 = Double.parseDouble(res.getString(2));
+                        ca3 = Double.parseDouble(res.getString(2));
+                        ca2 = ca/24;
+                        un = ca2%1;
+                        ca = ca2-un;
+                        ccaj = nf.format(ca);
+                        if (un>=0) {
+                            un = ca3-(ca*24);
+                            unn = nf.format(un);
+                        }
+                        id_v++;
+                        PdfPCell idd = new PdfPCell(new Phrase(Integer.toString(id_v),f2)); //IDPRODUCTOS
+                        if (id_v%2==0) {
+                            idd.setBackgroundColor(tab1);
+                        } else {
+                            idd.setBackgroundColor(tab2);
+                        }
+                        idd.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        idd.setBorderWidth(0);
+                        tabla7.addCell(idd);
+
+                        PdfPCell cat = new PdfPCell(new Phrase(res.getString(3),f2)); //NOMBRE_PRODUCTO
+                        if (id_v%2==0) {
+                            cat.setBackgroundColor(tab1);
+                        } else {
+                            cat.setBackgroundColor(tab2);
+                        }
+                        cat.setHorizontalAlignment(Element.ALIGN_LEFT);
+                        cat.setBorderWidth(0);
+                        tabla7.addCell(cat);
+                        
+                        PdfPCell cajas = new PdfPCell(new Phrase(ccaj,f2)); //Cajas
+                        if (id_v%2==0) {
+                            cajas.setBackgroundColor(tab1);
+                        } else {
+                            cajas.setBackgroundColor(tab2);
+                        }
+                        cajas.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        cajas.setBorderWidth(0);
+                        tabla7.addCell(cajas);
+                        
+                        PdfPCell unidad = new PdfPCell(new Phrase(unn,f2)); //Unidad
+                        if (id_v%2==0) {
+                            unidad.setBackgroundColor(tab1);
+                        } else {
+                            unidad.setBackgroundColor(tab2);
+                        }
+                        unidad.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        unidad.setBorderWidth(0);
+                        tabla7.addCell(unidad);
+                    } while (res.next());
+                }
+       
+            } catch (SQLException e) {
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/pdf.png"));
+                JOptionPane.showMessageDialog(null, "Error generando PDF Inventario "+e, "Error PDF", JOptionPane.PLAIN_MESSAGE, iconoo);
+            }
+            
+            String sql8="SELECT categoria, stock, nombre_producto FROM productos WHERE categoria='710' Order by categoria DESC;";
+            try {
+                Statement st = con.createStatement();
+                ResultSet res = st.executeQuery(sql8);
+                int id_v = 0;
+                if (res.next()) {
+                    do {
+                        ca = Double.parseDouble(res.getString(2));
+                        ca2 = Double.parseDouble(res.getString(2));
+                        ca3 = Double.parseDouble(res.getString(2));
+                        ca2 = ca/12;
+                        un = ca2%1;
+                        ca = ca2-un;
+                        ccaj = nf.format(ca);
+                        if (un>=0) {
+                            un = ca3-(ca*12);
+                            unn = nf.format(un);
+                        }
+                        id_v++;
+                        PdfPCell idd = new PdfPCell(new Phrase(Integer.toString(id_v),f2)); //IDPRODUCTOS
+                        if (id_v%2==0) {
+                            idd.setBackgroundColor(tab1);
+                        } else {
+                            idd.setBackgroundColor(tab2);
+                        }
+                        idd.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        idd.setBorderWidth(0);
+                        tabla8.addCell(idd);
+
+                        PdfPCell cat = new PdfPCell(new Phrase(res.getString(3),f2)); //NOMBRE_PRODUCTO
+                        if (id_v%2==0) {
+                            cat.setBackgroundColor(tab1);
+                        } else {
+                            cat.setBackgroundColor(tab2);
+                        }
+                        cat.setHorizontalAlignment(Element.ALIGN_LEFT);
+                        cat.setBorderWidth(0);
+                        tabla8.addCell(cat);
+                        
+                        PdfPCell cajas = new PdfPCell(new Phrase(ccaj,f2)); //Cajas
+                        if (id_v%2==0) {
+                            cajas.setBackgroundColor(tab1);
+                        } else {
+                            cajas.setBackgroundColor(tab2);
+                        }
+                        cajas.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        cajas.setBorderWidth(0);
+                        tabla8.addCell(cajas);
+                        
+                        PdfPCell unidad = new PdfPCell(new Phrase(unn,f2)); //Unidad
+                        if (id_v%2==0) {
+                            unidad.setBackgroundColor(tab1);
+                        } else {
+                            unidad.setBackgroundColor(tab2);
+                        }
+                        unidad.setHorizontalAlignment(Element.ALIGN_CENTER);
+                        unidad.setBorderWidth(0);
+                        tabla8.addCell(unidad);
+                    } while (res.next());
+                    
+                }
+       
+            } catch (SQLException e) {
+                Icon iconoo = new ImageIcon(getClass().getResource("/img/pdf.png"));
+                JOptionPane.showMessageDialog(null, "Error generando PDF Inventario "+e, "Error PDF", JOptionPane.PLAIN_MESSAGE, iconoo);
+            }
+
+            documento.add(parraf("Megas \n\n"));
+            documento.add(tabla);
+            documento.add(parraf("\nMedias \n\n"));
+            documento.add(tabla2);
+            documento.add(parraf("\nFamiliares \n\n"));
+            documento.add(tabla3);
+            documento.add(parraf("Cuartitas \n\n"));
+            documento.add(tabla4);
+            
+            documento.add(parraf("\nBote \n\n"));
+            documento.add(tabla6);
+            documento.add(parraf("\nLatones \n\n"));
+            documento.add(tabla7);
+            documento.add(parraf("\n710 \n\n"));
+            documento.add(tabla8);
+            
             documento.close();
             Icon iconoo = new ImageIcon(getClass().getResource("/img/ok.png"));
             JOptionPane.showMessageDialog(null, "Inventario Generado Exitosamente", "Generando Inventario", JOptionPane.PLAIN_MESSAGE, iconoo);
